@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import confetti from 'canvas-confetti';
 import {
   Download,
   Copy,
@@ -14,25 +15,103 @@ import {
   Smartphone,
   Tablet,
   Eye,
-  CheckCircle2,
   FolderArchive,
   RotateCcw,
   Shield,
   FileText,
-  Terminal,
+  Terminal as TerminalIcon,
+  Send,
+  Zap,
+  Mic,
+  Volume2,
+  VolumeX,
+  Play,
+  Pause,
+  Compass,
+  Cpu,
+  Boxes,
+  Activity,
   ArrowRight,
+  ChevronRight,
+  Radio,
+  Share2,
+  Lock,
+  Flame,
+  CheckCircle2,
   Sliders,
-  CheckCircle
+  Globe
 } from 'lucide-react';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'profile' | 'timeline' | 'characters' | 'deploy' | 'files'>('profile');
+  // Navigation & UI States
+  const [activeSection, setActiveSection] = useState('hero');
   const [viewport, setViewport] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
   const [bgTheme, setBgTheme] = useState<'navy' | 'checker' | 'github'>('navy');
   const [copied, setCopied] = useState(false);
   const [timelineSec, setTimelineSec] = useState<number | 'static'>(0);
   const [refreshKey, setRefreshKey] = useState(Date.now());
-  const [viewMarkdown, setViewMarkdown] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(false);
+  const [idCardFlipped, setIdCardFlipped] = useState(false);
+  const [laserActive, setLaserActive] = useState(true);
+
+  // 3D Parallax Tilt state for Hero
+  const [heroTilt, setHeroTilt] = useState({ x: 0, y: 0 });
+
+  // Terminal State
+  const [terminalInput, setTerminalInput] = useState('');
+  const [terminalLogs, setTerminalLogs] = useState<string[]>([
+    "SUKANT OS // v2026.11 [3D CYBERNETIC KERNEL]",
+    "System status: 🟢 ALL 5 PLAYBOOK SVGs ONLINE & VERIFIED",
+    "Type 'help' to inspect available system commands."
+  ]);
+
+  // Voice Assistant JARVIS Simulation State
+  const [jarvisActive, setJarvisActive] = useState(false);
+  const [jarvisLog, setJarvisLog] = useState("Standing by. Say or select a command below...");
+  const [jarvisQuery, setJarvisQuery] = useState('');
+
+  // Audio Context for Cyber Synth Sound Effects
+  const audioCtxRef = useRef<AudioContext | null>(null);
+
+  const playSynthBeep = (freq = 440, type: OscillatorType = 'sine', duration = 0.12) => {
+    if (!soundEnabled) return;
+    try {
+      if (!audioCtxRef.current) {
+        audioCtxRef.current = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
+      }
+      const ctx = audioCtxRef.current;
+      if (ctx.state === 'suspended') ctx.resume();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, ctx.currentTime);
+      gain.gain.setValueAtTime(0.08, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + duration);
+    } catch {
+      // Audio not permitted yet
+    }
+  };
+
+  const triggerConfetti = () => {
+    confetti({
+      particleCount: 80,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: ['#00f5ff', '#ff0055', '#a855f7', '#00ff9d', '#ffaa00']
+    });
+    playSynthBeep(880, 'triangle', 0.25);
+  };
+
+  const copyReadme = () => {
+    navigator.clipboard.writeText(rawReadme);
+    setCopied(true);
+    triggerConfetti();
+    setTimeout(() => setCopied(false), 2400);
+  };
 
   const rawReadme = `# Hi there, I'm Sukant 👋
 
@@ -82,663 +161,593 @@ export default function App() {
 
 </div>`;
 
-  const copyReadme = () => {
-    navigator.clipboard.writeText(rawReadme);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2200);
+  // Hero Mouse Parallax Tracker
+  const handleHeroMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width - 0.5) * 24;
+    const y = ((e.clientY - rect.top) / rect.height - 0.5) * -24;
+    setHeroTilt({ x, y });
   };
 
-  const restartTimeline = () => {
-    setRefreshKey(Date.now());
+  const handleHeroMouseLeave = () => {
+    setHeroTilt({ x: 0, y: 0 });
   };
 
-  const getViewportMaxWidth = () => {
-    if (viewport === 'mobile') return 'max-w-[375px]';
-    if (viewport === 'tablet') return 'max-w-[768px]';
-    return 'max-w-[920px]';
-  };
+  // Terminal Command Runner
+  const handleTerminalSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const cmd = terminalInput.trim().toLowerCase();
+    if (!cmd) return;
+    playSynthBeep(620, 'square', 0.08);
 
-  const getBgClass = () => {
-    if (bgTheme === 'checker') {
-      return 'bg-[#0f172a] bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:16px_16px]';
+    const newLogs = [...terminalLogs, `> ${terminalInput}`];
+    switch (cmd) {
+      case 'help':
+        newLogs.push(
+          "Available commands:",
+          "  help       - Show this command reference",
+          "  skills     - View orbital tech stack breakdown",
+          "  projects   - Show production repositories (JARVIS, MovieBox)",
+          "  playbook   - Verify all 5 SVG vector cards",
+          "  contact    - Print verified email & links",
+          "  matrix     - Activate cyber matrix particle stream",
+          "  download   - Download profile-assets.zip (1.36 MB)",
+          "  clear      - Clear terminal window"
+        );
+        break;
+      case 'skills':
+        newLogs.push(
+          "CORE TOOLKIT:",
+          "  [Mobile] Kotlin, Jetpack Compose, Coroutines, Room, Retrofit",
+          "  [AI]     Gemini API, PyTorch, Speech Recognition, Tool Calling",
+          "  [Infra]  Git, GitHub Actions, Docker, Linux, Gradle"
+        );
+        break;
+      case 'projects':
+        newLogs.push(
+          "PRODUCTION REPOS:",
+          "  1. The Ultimate JARVIS (Android Voice AI + Gemini Agent)",
+          "  2. MovieBox (Compose Streaming Client + ExoPlayer)",
+          "  3. AI Systems Core (Python FastAPI + Speech Pipelines)"
+        );
+        break;
+      case 'contact':
+        newLogs.push(
+          "CONTACT CHANNELS:",
+          "  Email:    sukantxplodeprime@gmail.com",
+          "  GitHub:   https://github.com/sukantcodes",
+          "  LinkedIn: https://linkedin.com/in/sukantcodes"
+        );
+        break;
+      case 'download':
+        newLogs.push("⚡ Triggering download: profile-assets.zip...");
+        triggerConfetti();
+        window.location.href = '/profile-assets.zip';
+        break;
+      case 'matrix':
+        newLogs.push("⚡ MATRIX STREAM ENGAGED: 01001011 01001111 01010100 01001100 01001001 01001110");
+        triggerConfetti();
+        break;
+      case 'playbook':
+        newLogs.push(
+          "PLAYBOOK ASSETS:",
+          "  01 / hero.svg          - Rising mask, 4 cycling roles, halo portrait",
+          "  02 / about-life.svg    - Capabilities + 3-slide 4s carousel",
+          "  03 / stack.svg         - 3 tilted 3D elliptical orbits + chips",
+          "  04 / id-dashboard.svg  - Lanyard drop, +/-1.7° pendulum, barcode laser",
+          "  05 / connect.svg       - Pointing character + neon social cards"
+        );
+        break;
+      case 'clear':
+        setTerminalLogs(["Terminal reset. Ready for commands."]);
+        setTerminalInput('');
+        return;
+      default:
+        newLogs.push(`Command not recognized: '${cmd}'. Type 'help' for commands.`);
     }
-    if (bgTheme === 'github') {
-      return 'bg-[#0d1117] border border-[#30363d]';
-    }
-    return 'bg-[#070b16]';
+
+    setTerminalLogs(newLogs.slice(-18));
+    setTerminalInput('');
   };
 
-  const userPhotos = [
-    {
-      title: 'Studio Headshot (Primary Reference)',
-      desc: 'Used for id.png stylized portrait, facial geometry, skin tone, hair and rim glow.',
-      path: '/assets/aistudio/file_000000000e608211a4920d26f54dd0dd_d521a39d.jpg'
-    },
-    {
-      title: 'Streetwear & Silver Chain Pose',
-      desc: 'Used for right_pointing.png outfit, silver chain, dark checkered hoodie and right-facing angle.',
-      path: '/assets/aistudio/file_00000000069c8211bd36f08583048ccb_59e251c0.jpg'
-    },
-    {
-      title: 'Mountain Sunrise Field Photo',
-      desc: 'Real outdoor photography reference highlighting adventure and mountain horizons.',
-      path: '/assets/aistudio/file_00000000b1e88211a8071e0a8b460325_61d0ae41.jpg'
-    },
-    {
-      title: 'Rooftop Urban Pose',
-      desc: 'Secondary styling reference for casual streetwear and relaxed confidence.',
-      path: '/assets/aistudio/file_000000006c288211bb133e92f170170e_94f4f368.jpg'
-    },
-    {
-      title: 'Park Bench Sunlight Photo',
-      desc: 'Arm posture and natural lighting reference.',
-      path: '/assets/aistudio/file_00000000ef0c82118a0d01ead8452eb1_4f014dbd.jpg'
-    }
+  // JARVIS Command Simulator
+  const runJarvisCommand = (query: string, response: string) => {
+    setJarvisActive(true);
+    setJarvisQuery(query);
+    setJarvisLog("Processing speech stream & running neural tool call...");
+    playSynthBeep(520, 'sine', 0.15);
+
+    setTimeout(() => {
+      setJarvisLog(response);
+      setJarvisActive(false);
+      playSynthBeep(780, 'sine', 0.2);
+    }, 1100);
+  };
+
+  const navLinks = [
+    { id: 'hero', label: '01 / 3D Reactor' },
+    { id: 'profile-suite', label: '02 / GitHub Playbook' },
+    { id: 'galaxy', label: '03 / 3D Orbit Galaxy' },
+    { id: 'projects', label: '04 / Repositories' },
+    { id: 'lanyard', label: '05 / 3D Pass ID' },
+    { id: 'photos', label: '06 / Real Photos' },
+    { id: 'roadmap', label: '07 / 3D Roadmap' },
+    { id: 'terminal', label: '08 / Cyber Console' },
+    { id: 'connect', label: '09 / Transmission' }
   ];
 
   return (
-    <div className="min-h-screen bg-[#050811] text-slate-100 flex flex-col selection:bg-[#247bff] selection:text-white">
-      {/* Top Navigation Bar */}
-      <header className="border-b border-slate-800/80 bg-[#070b16]/90 backdrop-blur sticky top-0 z-50 px-4 lg:px-8 py-3.5">
+    <div className="min-h-screen bg-[#030611] text-slate-100 selection:bg-[#00f5ff] selection:text-black relative overflow-x-hidden">
+      {/* Background 3D Ambient Glowing Nebulae */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        {/* Top Cyan Orb */}
+        <div className="absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full bg-gradient-to-tr from-[#00f5ff]/20 via-[#0080ff]/10 to-transparent blur-[140px] animate-pulse-glow" />
+        {/* Center Magenta Orb */}
+        <div className="absolute top-[35%] -right-40 w-[700px] h-[700px] rounded-full bg-gradient-to-bl from-[#ff0055]/20 via-[#a855f7]/15 to-transparent blur-[160px] animate-pulse-glow" style={{ animationDelay: '2s' }} />
+        {/* Bottom Emerald Orb */}
+        <div className="absolute bottom-[10%] left-[20%] w-[550px] h-[550px] rounded-full bg-gradient-to-tr from-[#00ff9d]/15 via-[#00f5ff]/10 to-transparent blur-[140px] animate-pulse-glow" style={{ animationDelay: '4s' }} />
+        {/* Subtle Scanline Overlay */}
+        <div className="absolute inset-0 scanlines opacity-40" />
+      </div>
+
+      {/* Top Floating Cyber HUD Bar */}
+      <header className="sticky top-0 z-50 px-4 lg:px-8 py-3 bg-[#040817]/85 backdrop-blur-md border-b border-cyan-500/20 box-glow-cyan">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#247bff] via-[#38bdf8] to-[#ff354f] p-[1.5px] shadow-lg shadow-blue-500/20">
-              <div className="w-full h-full bg-[#070b16] rounded-[10px] flex items-center justify-center font-bold text-base text-blue-400">
-                SC
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#00f5ff] via-[#a855f7] to-[#ff0055] p-[2px] shadow-lg shadow-cyan-500/30">
+              <div className="w-full h-full bg-[#040817] rounded-[10px] flex items-center justify-center font-black text-sm text-[#00f5ff] tracking-wider">
+                3D
               </div>
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-bold text-base tracking-tight text-white">Sukant Codes</span>
-                <span className="text-xs px-2 py-0.5 rounded-full font-mono bg-blue-500/10 text-blue-400 border border-blue-500/30">
+                <span className="font-extrabold text-base tracking-tight text-white neon-glow-cyan">
+                  Sukant Codes
+                </span>
+                <span className="text-xs px-2 py-0.5 rounded-full font-mono bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
                   @sukantcodes
                 </span>
-                <span className="inline-flex items-center gap-1 text-[11px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                  Verified Nov 2026
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                  Active Nov 2026
                 </span>
               </div>
-              <p className="text-xs text-slate-400 hidden sm:block">
-                The Profile Playbook GitHub Suite • Self-Contained Vector Engine
+              <p className="text-[11px] font-mono text-slate-400 hidden sm:block">
+                Long-Form 3D Cybernetic Portfolio • Native SMIL + Vector Universe
               </p>
             </div>
           </div>
 
           <div className="flex items-center flex-wrap gap-2.5">
+            {/* Audio Synth Toggle */}
+            <button
+              onClick={() => {
+                setSoundEnabled(!soundEnabled);
+                playSynthBeep(580, 'sine', 0.15);
+              }}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-mono transition ${
+                soundEnabled
+                  ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300'
+                  : 'bg-slate-900 border-slate-700 text-slate-400 hover:text-slate-200'
+              }`}
+              title="Toggle Cyber Sound Effects"
+            >
+              {soundEnabled ? <Volume2 className="w-3.5 h-3.5 text-cyan-400" /> : <VolumeX className="w-3.5 h-3.5" />}
+              <span>{soundEnabled ? 'FX: ON' : 'FX: OFF'}</span>
+            </button>
+
+            {/* Standalone preview.html link */}
             <a
               href="/preview.html"
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700 transition"
+              className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 transition"
             >
-              <Eye className="w-3.5 h-3.5 text-blue-400" />
-              <span>Stand-alone preview.html</span>
+              <Eye className="w-3.5 h-3.5 text-cyan-400" />
+              <span>preview.html</span>
               <ExternalLink className="w-3 h-3 text-slate-400" />
             </a>
 
+            {/* Copy README */}
             <button
               onClick={copyReadme}
-              className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700 transition"
+              className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 transition active:scale-95"
             >
               {copied ? (
                 <>
                   <Check className="w-3.5 h-3.5 text-emerald-400" />
-                  <span className="text-emerald-400 font-semibold">README Copied!</span>
+                  <span className="text-emerald-400 font-bold">README Copied!</span>
                 </>
               ) : (
                 <>
-                  <Copy className="w-3.5 h-3.5 text-slate-400" />
+                  <Copy className="w-3.5 h-3.5 text-cyan-400" />
                   <span>Copy README.md</span>
                 </>
               )}
             </button>
 
+            {/* Download Complete ZIP Package */}
             <a
               href="/profile-assets.zip"
               download="profile-assets.zip"
-              className="inline-flex items-center gap-2 text-xs font-semibold px-4 py-1.5 rounded-lg bg-gradient-to-r from-[#247bff] to-[#1d4ed8] hover:from-[#1d4ed8] hover:to-[#1e40af] text-white shadow-md shadow-blue-500/25 transition active:scale-95"
+              onClick={triggerConfetti}
+              className="inline-flex items-center gap-2 text-xs font-bold px-4 py-1.5 rounded-lg bg-gradient-to-r from-[#00f5ff] via-[#0080ff] to-[#ff0055] hover:opacity-90 text-black shadow-lg shadow-cyan-500/30 transition active:scale-95"
             >
               <Download className="w-3.5 h-3.5" />
-              <span>Download ZIP (1.35 MB)</span>
+              <span>Download ZIP (1.36 MB)</span>
             </a>
           </div>
         </div>
 
-        {/* Studio Sub-Navigation Tabs */}
-        <div className="max-w-7xl mx-auto mt-3 pt-2 border-t border-slate-800/50 flex items-center justify-between overflow-x-auto no-scrollbar gap-2">
-          <div className="flex items-center gap-1.5">
-            <button
-              onClick={() => setActiveTab('profile')}
-              className={`inline-flex items-center gap-2 text-xs font-medium px-3.5 py-1.5 rounded-lg transition ${
-                activeTab === 'profile'
-                  ? 'bg-blue-600/20 text-blue-400 border border-blue-500/40'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+        {/* Section Fast-Scroll Ribbon */}
+        <div className="max-w-7xl mx-auto mt-2.5 pt-2 border-t border-slate-800/60 flex items-center gap-2 overflow-x-auto no-scrollbar">
+          {navLinks.map((item) => (
+            <a
+              key={item.id}
+              href={`#${item.id}`}
+              onClick={() => {
+                setActiveSection(item.id);
+                playSynthBeep(480, 'sine', 0.05);
+              }}
+              className={`text-[11px] font-mono whitespace-nowrap px-3 py-1 rounded-md transition ${
+                activeSection === item.id
+                  ? 'bg-cyan-500/20 text-[#00f5ff] border border-cyan-500/40 font-bold'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
               }`}
             >
-              <Monitor className="w-3.5 h-3.5" />
-              <span>Live GitHub Profile</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('timeline')}
-              className={`inline-flex items-center gap-2 text-xs font-medium px-3.5 py-1.5 rounded-lg transition ${
-                activeTab === 'timeline'
-                  ? 'bg-blue-600/20 text-blue-400 border border-blue-500/40'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-              }`}
-            >
-              <Clock className="w-3.5 h-3.5" />
-              <span>SMIL Timeline Inspector (0s, 2s, 5s, 9s, 13s)</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('characters')}
-              className={`inline-flex items-center gap-2 text-xs font-medium px-3.5 py-1.5 rounded-lg transition ${
-                activeTab === 'characters'
-                  ? 'bg-blue-600/20 text-blue-400 border border-blue-500/40'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-              }`}
-            >
-              <User className="w-3.5 h-3.5" />
-              <span>Character Studio &amp; Photos</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('deploy')}
-              className={`inline-flex items-center gap-2 text-xs font-medium px-3.5 py-1.5 rounded-lg transition ${
-                activeTab === 'deploy'
-                  ? 'bg-blue-600/20 text-blue-400 border border-blue-500/40'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-              }`}
-            >
-              <FolderArchive className="w-3.5 h-3.5" />
-              <span>GitHub Upload Playbook</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('files')}
-              className={`inline-flex items-center gap-2 text-xs font-medium px-3.5 py-1.5 rounded-lg transition ${
-                activeTab === 'files'
-                  ? 'bg-blue-600/20 text-blue-400 border border-blue-500/40'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-              }`}
-            >
-              <Code className="w-3.5 h-3.5" />
-              <span>Repository File Tree</span>
-            </button>
-          </div>
-
-          <div className="text-[11px] font-mono text-slate-500 hidden md:block">
-            Target: <span className="text-slate-300">sukantcodes/sukantcodes:main</span>
-          </div>
+              {item.label}
+            </a>
+          ))}
         </div>
       </header>
 
-      {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-8">
-        {/* TAB 1: LIVE PROFILE VIEW */}
-        {activeTab === 'profile' && (
-          <div className="space-y-6">
-            {/* Viewport & Environment Controls Toolbar */}
-            <div className="bg-[#0b1122] border border-slate-800 rounded-xl p-4 flex flex-wrap items-center justify-between gap-4 shadow-sm">
-              <div className="flex items-center flex-wrap gap-4">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-slate-400 font-medium">Viewport:</span>
-                  <div className="flex bg-slate-900 rounded-lg p-0.5 border border-slate-800">
-                    <button
-                      onClick={() => setViewport('desktop')}
-                      className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs rounded-md font-medium transition ${
-                        viewport === 'desktop' ? 'bg-[#247bff] text-white' : 'text-slate-400 hover:text-slate-200'
-                      }`}
-                    >
-                      <Monitor className="w-3.5 h-3.5" />
-                      <span>Desktop (920px)</span>
-                    </button>
-                    <button
-                      onClick={() => setViewport('tablet')}
-                      className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs rounded-md font-medium transition ${
-                        viewport === 'tablet' ? 'bg-[#247bff] text-white' : 'text-slate-400 hover:text-slate-200'
-                      }`}
-                    >
-                      <Tablet className="w-3.5 h-3.5" />
-                      <span>Tablet (768px)</span>
-                    </button>
-                    <button
-                      onClick={() => setViewport('mobile')}
-                      className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs rounded-md font-medium transition ${
-                        viewport === 'mobile' ? 'bg-[#247bff] text-white' : 'text-slate-400 hover:text-slate-200'
-                      }`}
-                    >
-                      <Smartphone className="w-3.5 h-3.5" />
-                      <span>Mobile (375px)</span>
-                    </button>
-                  </div>
+      {/* ============================================================== */}
+      {/* SECTION 1: EPIC 3D CYBER REACTOR HERO (MOUSE PARALLAX TILT) */}
+      {/* ============================================================== */}
+      <section
+        id="hero"
+        className="relative min-h-[92vh] flex items-center justify-center px-4 lg:px-8 py-16 perspective-1000 overflow-hidden"
+        onMouseMove={handleHeroMouseMove}
+        onMouseLeave={handleHeroMouseLeave}
+      >
+        {/* Animated 3D Cyber Floor */}
+        <div className="absolute bottom-0 left-0 right-0 h-96 cyber-grid-floor opacity-30 pointer-events-none" />
+
+        <div
+          className="max-w-6xl w-full mx-auto relative z-10 transition-transform duration-200 ease-out preserve-3d"
+          style={{
+            transform: `rotateX(${heroTilt.y}deg) rotateY(${heroTilt.x}deg)`
+          }}
+        >
+          {/* Main Hero Card Chassis */}
+          <div className="bg-[#050b1d]/80 backdrop-blur-xl border-2 border-cyan-500/40 rounded-3xl p-6 sm:p-12 box-glow-multi relative overflow-hidden">
+            {/* Corner Tech Brackets */}
+            <div className="absolute top-3 left-3 w-6 h-6 border-t-2 border-l-2 border-[#00f5ff]" />
+            <div className="absolute top-3 right-3 w-6 h-6 border-t-2 border-r-2 border-[#ff0055]" />
+            <div className="absolute bottom-3 left-3 w-6 h-6 border-b-2 border-l-2 border-[#ff0055]" />
+            <div className="absolute bottom-3 right-3 w-6 h-6 border-b-2 border-r-2 border-[#00f5ff]" />
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+              {/* Left Column: 3D Typography */}
+              <div className="lg:col-span-7 space-y-6">
+                {/* Tech Status Pill */}
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-900/90 border border-cyan-500/50 box-glow-cyan">
+                  <span className="w-2 h-2 rounded-full bg-[#00ff9d] animate-ping" />
+                  <span className="text-xs font-mono text-[#00f5ff] font-bold">
+                    SYSTEM // ANDROID ARCHITECT &amp; VOICE AI
+                  </span>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-slate-400 font-medium">Theme:</span>
-                  <div className="flex bg-slate-900 rounded-lg p-0.5 border border-slate-800">
-                    <button
-                      onClick={() => setBgTheme('navy')}
-                      className={`px-3 py-1 text-xs rounded-md font-medium transition ${
-                        bgTheme === 'navy' ? 'bg-[#247bff] text-white' : 'text-slate-400 hover:text-slate-200'
-                      }`}
-                    >
-                      Deep Navy
-                    </button>
-                    <button
-                      onClick={() => setBgTheme('github')}
-                      className={`px-3 py-1 text-xs rounded-md font-medium transition ${
-                        bgTheme === 'github' ? 'bg-[#247bff] text-white' : 'text-slate-400 hover:text-slate-200'
-                      }`}
-                    >
-                      GitHub Dark
-                    </button>
-                    <button
-                      onClick={() => setBgTheme('checker')}
-                      className={`px-3 py-1 text-xs rounded-md font-medium transition ${
-                        bgTheme === 'checker' ? 'bg-[#247bff] text-white' : 'text-slate-400 hover:text-slate-200'
-                      }`}
-                    >
-                      Alpha Grid
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={restartTimeline}
-                  className="inline-flex items-center gap-1.5 text-xs px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition"
-                  title="Re-trigger animations from 0s"
-                >
-                  <RotateCcw className="w-3.5 h-3.5 text-blue-400" />
-                  <span>Restart SMIL</span>
-                </button>
-
-                <button
-                  onClick={() => setViewMarkdown(!viewMarkdown)}
-                  className={`inline-flex items-center gap-1.5 text-xs px-3 py-1 rounded-lg border transition ${
-                    viewMarkdown
-                      ? 'bg-blue-600 text-white border-blue-500'
-                      : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700'
-                  }`}
-                >
-                  <Code className="w-3.5 h-3.5" />
-                  <span>{viewMarkdown ? 'Hide Raw Markdown' : 'View Raw Markdown'}</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Raw Markdown Drawer */}
-            {viewMarkdown && (
-              <div className="bg-[#070b16] border border-blue-500/40 rounded-xl p-5 shadow-xl">
-                <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-800">
-                  <div className="flex items-center gap-2">
-                    <FileText className="w-4 h-4 text-blue-400" />
-                    <span className="font-mono text-xs text-slate-300">README.md (Exact GitHub Root Document)</span>
-                  </div>
-                  <button
-                    onClick={copyReadme}
-                    className="inline-flex items-center gap-1.5 text-xs bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded-md transition"
-                  >
-                    {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                    <span>{copied ? 'Copied!' : 'Copy Code'}</span>
-                  </button>
-                </div>
-                <pre className="text-xs font-mono text-slate-300 overflow-x-auto p-3 bg-[#04060c] rounded-lg border border-slate-800/80 leading-relaxed max-h-[300px]">
-                  {rawReadme}
-                </pre>
-              </div>
-            )}
-
-            {/* GitHub Profile Container Preview */}
-            <div className="flex justify-center">
-              <div
-                className={`w-full ${getViewPagerWrapperClass(viewport)} transition-all duration-300`}
-              >
-                {/* GitHub Simulated Header */}
-                <div className="bg-[#161b22] border border-[#30363d] rounded-t-xl px-4 py-3 flex items-center justify-between text-xs text-slate-400">
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold text-slate-200">sukantcodes</span>
-                    <span>/</span>
-                    <span className="font-bold text-white">README.md</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-[11px] text-slate-400">Preview Mode • GitHub Safe</span>
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                  </div>
-                </div>
-
-                {/* Simulated GitHub Readme Body */}
-                <div className={`p-4 sm:p-8 rounded-b-xl border-x border-b border-[#30363d] space-y-6 ${getBgClass()}`}>
-                  {/* Title Bar */}
-                  <h1 className="text-2xl font-bold tracking-tight text-white border-b border-slate-800 pb-3 flex items-center justify-between">
-                    <span>Hi there, I'm Sukant 👋</span>
-                    <span className="text-xs font-mono font-normal text-slate-400">sukantcodes/sukantcodes</span>
+                {/* Extruded 3D Title */}
+                <div>
+                  <h1 className="text-4xl sm:text-6xl font-black tracking-tight leading-none">
+                    <span className="block text-slate-200 drop-shadow-md">SUKANT</span>
+                    <span className="block bg-gradient-to-r from-[#00f5ff] via-[#ffffff] to-[#ff0055] bg-clip-text text-transparent neon-glow-cyan animate-pulse">
+                      BHATTACHARYA
+                    </span>
                   </h1>
+                  <p className="text-sm font-mono text-slate-400 mt-2">
+                    <span className="text-cyan-400">@sukantcodes</span> • India / Global • Full-Stack Android &amp; Neural Intelligence
+                  </p>
+                </div>
 
-                  {/* 01 Hero */}
-                  <div className="relative group rounded-2xl overflow-hidden shadow-2xl transition hover:ring-1 hover:ring-blue-500/50">
+                {/* Mission Statement */}
+                <p className="text-base sm:text-lg text-slate-300 font-normal leading-relaxed">
+                  Architecting <strong className="text-cyan-300 font-semibold">autonomous AI voice assistants</strong>, high-performance media engines, and reactive Android apps built with{' '}
+                  <strong className="text-purple-400 font-semibold">Kotlin</strong>, <strong className="text-emerald-400 font-semibold">Jetpack Compose</strong>, and neural tool-calling models.
+                </p>
+
+                {/* 4 Interactive Feature Highlights */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+                  <div className="bg-[#0b1428] p-3 rounded-xl border border-cyan-500/30 text-center">
+                    <div className="text-xs font-mono text-cyan-400 font-bold">100%</div>
+                    <div className="text-[11px] text-slate-400 mt-0.5">Kotlin &amp; Compose</div>
+                  </div>
+                  <div className="bg-[#0b1428] p-3 rounded-xl border border-rose-500/30 text-center">
+                    <div className="text-xs font-mono text-rose-400 font-bold">&lt; 300ms</div>
+                    <div className="text-[11px] text-slate-400 mt-0.5">JARVIS AI Voice</div>
+                  </div>
+                  <div className="bg-[#0b1428] p-3 rounded-xl border border-purple-500/30 text-center">
+                    <div className="text-xs font-mono text-purple-400 font-bold">5 SVGs</div>
+                    <div className="text-[11px] text-slate-400 mt-0.5">Profile Playbook</div>
+                  </div>
+                  <div className="bg-[#0b1428] p-3 rounded-xl border border-emerald-500/30 text-center">
+                    <div className="text-xs font-mono text-emerald-400 font-bold">0 Requests</div>
+                    <div className="text-[11px] text-slate-400 mt-0.5">Self-Contained</div>
+                  </div>
+                </div>
+
+                {/* CTA Buttons */}
+                <div className="flex flex-wrap items-center gap-4 pt-2">
+                  <a
+                    href="#profile-suite"
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#00f5ff] to-[#0080ff] text-black font-extrabold text-sm shadow-xl shadow-cyan-500/30 hover:scale-105 transition"
+                  >
+                    <Sparkles className="w-4 h-4 text-black" />
+                    <span>Explore 3D Playbook SVGs</span>
+                  </a>
+
+                  <a
+                    href="#projects"
+                    className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-200 border border-slate-700 text-sm font-semibold transition"
+                  >
+                    <Cpu className="w-4 h-4 text-rose-400" />
+                    <span>Inspect Repositories</span>
+                  </a>
+                </div>
+              </div>
+
+              {/* Right Column: 3D Holographic Character & Gyro Rings */}
+              <div className="lg:col-span-5 flex justify-center">
+                <div className="relative w-72 h-72 sm:w-80 sm:h-80 flex items-center justify-center animate-float-smooth">
+                  {/* Outer Gyro Ring Cyan */}
+                  <div className="absolute inset-0 rounded-full border-2 border-dashed border-cyan-400/60 animate-spin" style={{ animationDuration: '18s' }} />
+                  {/* Middle Gyro Ring Crimson */}
+                  <div className="absolute inset-3 rounded-full border-2 border-dashed border-rose-500/70 animate-spin" style={{ animationDuration: '24s', animationDirection: 'reverse' }} />
+                  {/* Inner Gyro Ring Violet */}
+                  <div className="absolute inset-7 rounded-full border border-purple-400/50 animate-spin" style={{ animationDuration: '32s' }} />
+
+                  {/* 3D Glass Chassis */}
+                  <div className="relative w-60 h-60 rounded-3xl bg-[#081024] p-3 border-2 border-cyan-400/50 box-glow-multi overflow-hidden">
                     <img
-                      src={`/assets/hero.svg?v=1&t=${refreshKey}`}
-                      alt="Sukant Codes - Hero Banner"
-                      className="w-full h-auto block"
+                      src="/assets/id.png"
+                      alt="Sukant Bhattacharya Stylized 3D Portrait"
+                      className="w-full h-full object-cover rounded-2xl"
                     />
-                    <div className="absolute top-2.5 right-2.5 opacity-0 group-hover:opacity-100 transition bg-black/70 backdrop-blur px-2.5 py-1 rounded text-[11px] font-mono text-slate-300">
-                      assets/hero.svg?v=1
-                    </div>
+                    {/* Rainbow Holographic Light Sweep */}
+                    <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent pointer-events-none" />
                   </div>
 
-                  {/* 02 About & Capabilities */}
-                  <div className="relative group rounded-2xl overflow-hidden shadow-2xl transition hover:ring-1 hover:ring-blue-500/50">
-                    <img
-                      src={`/assets/about-life.svg?v=1&t=${refreshKey}`}
-                      alt="Sukant Codes - Capabilities & Carousel"
-                      className="w-full h-auto block"
-                    />
-                    <div className="absolute top-2.5 right-2.5 opacity-0 group-hover:opacity-100 transition bg-black/70 backdrop-blur px-2.5 py-1 rounded text-[11px] font-mono text-slate-300">
-                      assets/about-life.svg?v=1
-                    </div>
-                  </div>
-
-                  {/* 03 Orbital Stack */}
-                  <div className="relative group rounded-2xl overflow-hidden shadow-2xl transition hover:ring-1 hover:ring-blue-500/50">
-                    <img
-                      src={`/assets/stack.svg?v=1&t=${refreshKey}`}
-                      alt="Sukant Codes - Three-Tier Orbital Stack"
-                      className="w-full h-auto block"
-                    />
-                    <div className="absolute top-2.5 right-2.5 opacity-0 group-hover:opacity-100 transition bg-black/70 backdrop-blur px-2.5 py-1 rounded text-[11px] font-mono text-slate-300">
-                      assets/stack.svg?v=1
-                    </div>
-                  </div>
-
-                  {/* 04 ID Dashboard */}
-                  <div className="relative group rounded-2xl overflow-hidden shadow-2xl transition hover:ring-1 hover:ring-blue-500/50">
-                    <img
-                      src={`/assets/id-dashboard.svg?v=1&t=${refreshKey}`}
-                      alt="Sukant Codes - Hanging Lanyard ID Dashboard"
-                      className="w-full h-auto block"
-                    />
-                    <div className="absolute top-2.5 right-2.5 opacity-0 group-hover:opacity-100 transition bg-black/70 backdrop-blur px-2.5 py-1 rounded text-[11px] font-mono text-slate-300">
-                      assets/id-dashboard.svg?v=1
-                    </div>
-                  </div>
-
-                  {/* 05 Connect */}
-                  <div className="relative group rounded-2xl overflow-hidden shadow-2xl transition hover:ring-1 hover:ring-blue-500/50">
-                    <img
-                      src={`/assets/connect.svg?v=1&t=${refreshKey}`}
-                      alt="Sukant Codes - Pointing Character Connect"
-                      className="w-full h-auto block"
-                    />
-                    <div className="absolute top-2.5 right-2.5 opacity-0 group-hover:opacity-100 transition bg-black/70 backdrop-blur px-2.5 py-1 rounded text-[11px] font-mono text-slate-300">
-                      assets/connect.svg?v=1
-                    </div>
-                  </div>
-
-                  {/* Clickable Social Badges (Real markdown links as specified in Playbook) */}
-                  <div className="pt-6 border-t border-slate-800/80 text-center space-y-4">
-                    <div className="flex items-center justify-center gap-2">
-                      <span className="text-xs font-mono uppercase tracking-wider text-slate-400">
-                        Verified External Touchpoints
-                      </span>
-                    </div>
-
-                    <div className="flex flex-wrap items-center justify-center gap-2.5">
-                      <a
-                        href="https://github.com/sukantcodes"
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-[#247bff] hover:bg-[#1d4ed8] text-white font-mono text-xs font-bold shadow transition"
-                      >
-                        <span>GitHub: @sukantcodes</span>
-                        <ExternalLink className="w-3 h-3" />
-                      </a>
-                      <a
-                        href="https://linkedin.com/in/sukantcodes"
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-[#0a66c2] hover:bg-[#084e96] text-white font-mono text-xs font-bold shadow transition"
-                      >
-                        <span>LinkedIn: Sukant</span>
-                        <ExternalLink className="w-3 h-3" />
-                      </a>
-                      <a
-                        href="mailto:sukantxplodeprime@gmail.com"
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-[#ff354f] hover:bg-[#e0263f] text-white font-mono text-xs font-bold shadow transition"
-                      >
-                        <span>Email: sukantxplodeprime@gmail.com</span>
-                        <ExternalLink className="w-3 h-3" />
-                      </a>
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-emerald-600 text-white font-mono text-xs font-bold shadow">
-                        <span>● Status: ONLINE &amp; ACTIVE</span>
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Projects Showcase Table */}
-                  <div className="pt-6 border-t border-slate-800/80">
-                    <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-blue-400" />
-                      <span>Production Repositories &amp; Engineering Highlights</span>
-                    </h3>
-                    <div className="overflow-x-auto rounded-xl border border-slate-800 bg-[#070b16]">
-                      <table className="w-full text-left border-collapse text-xs">
-                        <thead>
-                          <tr className="border-b border-slate-800 bg-slate-900/80 text-slate-300 font-mono">
-                            <th className="py-3 px-4 font-semibold">Repository</th>
-                            <th className="py-3 px-4 font-semibold">Primary Stack</th>
-                            <th className="py-3 px-4 font-semibold">Architecture &amp; Features</th>
-                            <th className="py-3 px-4 font-semibold">Status</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-800/60 font-sans text-slate-300">
-                          <tr className="hover:bg-slate-800/20 transition">
-                            <td className="py-3.5 px-4 font-semibold text-blue-400 font-mono">
-                              <a
-                                href="https://github.com/sukantcodes"
-                                target="_blank"
-                                rel="noreferrer"
-                                className="hover:underline flex items-center gap-1"
-                              >
-                                The Ultimate JARVIS
-                                <ExternalLink className="w-3 h-3 text-slate-500" />
-                              </a>
-                            </td>
-                            <td className="py-3.5 px-4 font-mono text-slate-400">Kotlin • Gemini AI • Android SDK</td>
-                            <td className="py-3.5 px-4 text-slate-300">
-                              Autonomous AI voice assistant featuring sub-second voice recognition, tool calling, and local device automation.
-                            </td>
-                            <td className="py-3.5 px-4">
-                              <span className="px-2 py-0.5 rounded-full text-[11px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                                🟢 Deployed
-                              </span>
-                            </td>
-                          </tr>
-
-                          <tr className="hover:bg-slate-800/20 transition">
-                            <td className="py-3.5 px-4 font-semibold text-rose-400 font-mono">
-                              <a
-                                href="https://github.com/sukantcodes"
-                                target="_blank"
-                                rel="noreferrer"
-                                className="hover:underline flex items-center gap-1"
-                              >
-                                MovieBox Streaming Engine
-                                <ExternalLink className="w-3 h-3 text-slate-500" />
-                              </a>
-                            </td>
-                            <td className="py-3.5 px-4 font-mono text-slate-400">Compose • ExoPlayer • Room</td>
-                            <td className="py-3.5 px-4 text-slate-300">
-                              Modern media streaming client with declarative UI, chunked preloading, and offline cache.
-                            </td>
-                            <td className="py-3.5 px-4">
-                              <span className="px-2 py-0.5 rounded-full text-[11px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                                🟢 Deployed
-                              </span>
-                            </td>
-                          </tr>
-
-                          <tr className="hover:bg-slate-800/20 transition">
-                            <td className="py-3.5 px-4 font-semibold text-amber-400 font-mono">
-                              <a
-                                href="https://github.com/sukantcodes"
-                                target="_blank"
-                                rel="noreferrer"
-                                className="hover:underline flex items-center gap-1"
-                              >
-                                AI Systems Core
-                                <ExternalLink className="w-3 h-3 text-slate-500" />
-                              </a>
-                            </td>
-                            <td className="py-3.5 px-4 font-mono text-slate-400">Python • FastAPI • PyTorch</td>
-                            <td className="py-3.5 px-4 text-slate-300">
-                              Backend speech synthesis, agent routing pipelines, and neural assistant middleware.
-                            </td>
-                            <td className="py-3.5 px-4">
-                              <span className="px-2 py-0.5 rounded-full text-[11px] font-mono bg-amber-500/10 text-amber-400 border border-amber-500/30">
-                                🛠️ Active
-                              </span>
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
+                  {/* Orbiting Badge */}
+                  <div className="absolute -bottom-3 bg-[#040817] border border-cyan-400 px-4 py-1.5 rounded-full text-xs font-mono font-bold text-white shadow-lg flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    <span>SUKANT // 3D-VERIFIED</span>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        )}
+        </div>
+      </section>
 
-        {/* TAB 2: ANIMATION TIMELINE INSPECTOR */}
-        {activeTab === 'timeline' && (
-          <div className="space-y-6">
-            <div className="bg-[#0b1122] border border-slate-800 rounded-xl p-5 shadow-sm">
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                <div>
-                  <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                    <Clock className="w-5 h-5 text-blue-400" />
-                    <span>SMIL Vector Animation Timeline Verification</span>
-                  </h2>
-                  <p className="text-xs text-slate-400 mt-1">
-                    Playbook requirement: "Render every SVG at 0, 2, 5, 9 and 13 seconds, also with animation removed as an img element."
-                  </p>
-                </div>
+      {/* ============================================================== */}
+      {/* SECTION 2: GITHUB PROFILE PLAYBOOK SUITE (ALL 5 3D SVGS) */}
+      {/* ============================================================== */}
+      <section id="profile-suite" className="py-20 px-4 lg:px-8 max-w-7xl mx-auto space-y-8 relative">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-cyan-500/20 pb-5">
+          <div>
+            <div className="inline-flex items-center gap-2 text-xs font-mono text-[#00f5ff] font-bold">
+              <Boxes className="w-4 h-4" />
+              <span>THE PROFILE PLAYBOOK // 5-CARD 3D VECTOR SUITE</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-white mt-1 neon-glow-cyan">
+              Animated GitHub README Components
+            </h2>
+            <p className="text-sm text-slate-400 mt-1 max-w-2xl">
+              All 5 self-contained animated vector files required by the uploaded Playbook. Each card is rendered with 3D perspective depth, glowing neon gradients, and zero external network requests.
+            </p>
+          </div>
 
-                <button
-                  onClick={restartTimeline}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-medium text-xs transition"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                  <span>Restart Loop (0s)</span>
-                </button>
-              </div>
-
-              {/* Time Bookmark Buttons */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 mt-5">
-                {[
-                  { sec: 0, label: '0s: Initial Drop', desc: 'Lanyard drops, rising mask starts, progress bar 1 begins' },
-                  { sec: 2, label: '2s: Settle & Reveal', desc: 'Damped pendulum settles, name emerges, role 1 active' },
-                  { sec: 5, label: '5s: Role & Slide 2', desc: 'AI Voice role, MovieBox carousel, perpetual +/-1.7° swing' },
-                  { sec: 9, label: '9s: Slide 3 & Orbit', desc: 'Kotlin lead, mountain photo slide, orbital planetary nodes' },
-                  { sec: 13, label: '13s: Seamless Loop', desc: 'Full cycle complete, role 1 re-emerges, loop restarts' },
-                  { sec: 'static' as const, label: 'Reduced Motion', desc: 'Static fallback: zero animation, final readable state' }
-                ].map((item) => (
-                  <button
-                    key={String(item.sec)}
-                    onClick={() => {
-                      setTimelineSec(item.sec);
-                      setRefreshKey(Date.now());
-                    }}
-                    className={`p-3 text-left rounded-xl border transition ${
-                      timelineSec === item.sec
-                        ? 'bg-blue-600/20 border-blue-500 text-white shadow-lg shadow-blue-500/10'
-                        : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'
-                    }`}
-                  >
-                    <div className="font-mono text-xs font-bold text-blue-400">{item.label}</div>
-                    <div className="text-[11px] text-slate-400 mt-1 leading-tight">{item.desc}</div>
-                  </button>
-                ))}
-              </div>
+          {/* Controls Bar */}
+          <div className="flex items-center flex-wrap gap-2.5">
+            {/* Viewport Width Selector */}
+            <div className="flex bg-slate-900 rounded-lg p-1 border border-slate-800">
+              <button
+                onClick={() => setViewport('desktop')}
+                className={`px-3 py-1 text-xs rounded-md font-medium transition ${
+                  viewport === 'desktop' ? 'bg-[#00f5ff] text-black font-bold' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                Desktop
+              </button>
+              <button
+                onClick={() => setViewport('tablet')}
+                className={`px-3 py-1 text-xs rounded-md font-medium transition ${
+                  viewport === 'tablet' ? 'bg-[#00f5ff] text-black font-bold' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                Tablet
+              </button>
+              <button
+                onClick={() => setViewport('mobile')}
+                className={`px-3 py-1 text-xs rounded-md font-medium transition ${
+                  viewport === 'mobile' ? 'bg-[#00f5ff] text-black font-bold' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                Mobile
+              </button>
             </div>
 
-            {/* Individual SVG Cards with Time State Analysis */}
-            <div className="grid grid-cols-1 gap-6">
-              {[
-                {
-                  id: 'hero',
-                  file: 'hero.svg',
-                  name: '01 / Hero Banner',
-                  timing: '12s Loop (4 roles x 3s) • 1s Rising Mask • Blinking Terminal Cursor',
-                  detail:
-                    'Self-contained rising-mask animation via SVG clipPath, cycling roles from Android Architect to AI Engineer to Kotlin Lead to Open Source, embedded base64 id.png with dual electric-blue and crimson rim halos.'
-                },
-                {
-                  id: 'about-life',
-                  file: 'about-life.svg',
-                  name: '02 / About & Carousel',
-                  timing: '12s Loop (3 slides x 4s) • 3 Segment Progress Bars (0-4s, 4-8s, 8-12s)',
-                  detail:
-                    'Capabilities on the left side beside an active 3-slide interests carousel with synchronized segment progress bars changing smoothly between Voice AI, MovieBox Streaming, and Mountain Field Explorations.'
-                },
-                {
-                  id: 'stack',
-                  file: 'stack.svg',
-                  name: '03 / Orbital Stack Matrix',
-                  timing: 'Continuous 24s, 32s, 40s elliptical planetary rotations',
-                  detail:
-                    'Three tilted elliptical orbits featuring Mobile Core (Kotlin, Android, Compose), AI & Systems (Python, Gemini, PyTorch), and DevOps/Tooling (Git, Docker, TS) plus organized stack chips below.'
-                },
-                {
-                  id: 'id-dashboard',
-                  file: 'id-dashboard.svg',
-                  name: '04 / Lanyard ID Dashboard',
-                  timing: '2.5s Entrance Damping + Perpetual +/-1.7° Pendulum Swing + 4s Foil Sweep',
-                  detail:
-                    'Realistic metal clasp with specular highlight, nylon ribbon strap, holographic foil sweep over id.png, dated barcode visualizer, and verified production repo cards.'
-                },
-                {
-                  id: 'connect',
-                  file: 'connect.svg',
-                  name: '05 / Connect with Pointing Character',
-                  timing: '1.6s Nudging Arrow Pulse • 4s Subtle Character Float',
-                  detail:
-                    'Embedded real right_pointing.png on the left with transparent alpha pointing toward social touchpoints (GitHub, LinkedIn, Email, Mentorship) with animated pointer indicator.'
-                }
-              ].map((item) => (
-                <div key={item.id} className="bg-[#0b1122] border border-slate-800 rounded-xl p-6 space-y-4">
-                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
-                    <div>
-                      <h3 className="font-bold text-base text-white">{item.name}</h3>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="font-mono text-xs text-blue-400">assets/{item.file}?v=1</span>
-                        <span className="text-slate-600">•</span>
-                        <span className="text-xs text-slate-400">{item.timing}</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <a
-                        href={`/assets/${item.file}`}
-                        download={item.file}
-                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-slate-800 hover:bg-slate-700 text-xs font-mono text-slate-300 border border-slate-700 transition"
-                      >
-                        <Download className="w-3 h-3" />
-                        <span>Download SVG</span>
-                      </a>
-                    </div>
+            {/* Background Theme Selector */}
+            <div className="flex bg-slate-900 rounded-lg p-1 border border-slate-800">
+              <button
+                onClick={() => setBgTheme('navy')}
+                className={`px-2.5 py-1 text-xs rounded-md transition ${
+                  bgTheme === 'navy' ? 'bg-cyan-500/20 text-cyan-300 font-bold' : 'text-slate-400'
+                }`}
+              >
+                Obsidian
+              </button>
+              <button
+                onClick={() => setBgTheme('github')}
+                className={`px-2.5 py-1 text-xs rounded-md transition ${
+                  bgTheme === 'github' ? 'bg-cyan-500/20 text-cyan-300 font-bold' : 'text-slate-400'
+                }`}
+              >
+                GitHub Dark
+              </button>
+              <button
+                onClick={() => setBgTheme('checker')}
+                className={`px-2.5 py-1 text-xs rounded-md transition ${
+                  bgTheme === 'checker' ? 'bg-cyan-500/20 text-cyan-300 font-bold' : 'text-slate-400'
+                }`}
+              >
+                Alpha Grid
+              </button>
+            </div>
+
+            {/* Restart SMIL Loop */}
+            <button
+              onClick={() => {
+                setRefreshKey(Date.now());
+                playSynthBeep(520, 'triangle', 0.1);
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-mono text-cyan-400 transition"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Replay Loops</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Timeline Scrubber Bookmarks (Page 2 Playbook Requirement: 0s, 2s, 5s, 9s, 13s) */}
+        <div className="bg-[#070e22] border border-cyan-500/30 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2 text-xs font-mono text-slate-300">
+            <Clock className="w-4 h-4 text-cyan-400" />
+            <span className="font-bold">Playbook Timeline Verification:</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {[
+              { sec: 0, label: '0s: Initial Drop' },
+              { sec: 2, label: '2s: Settle & Reveal' },
+              { sec: 5, label: '5s: Role & Slide 2' },
+              { sec: 9, label: '9s: Slide 3 & Orbits' },
+              { sec: 13, label: '13s: Seamless Loop' },
+              { sec: 'static' as const, label: 'Static (Reduced Motion)' }
+            ].map((item) => (
+              <button
+                key={String(item.sec)}
+                onClick={() => {
+                  setTimelineSec(item.sec);
+                  setRefreshKey(Date.now());
+                  playSynthBeep(440 + (typeof item.sec === 'number' ? item.sec * 30 : 0), 'sine', 0.08);
+                }}
+                className={`px-3 py-1 text-xs font-mono rounded-lg border transition ${
+                  timelineSec === item.sec
+                    ? 'bg-[#00f5ff] text-black border-[#00f5ff] font-bold shadow-md shadow-cyan-500/20'
+                    : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
+                }`}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* 5 Full Vector Showcase Cards */}
+        <div className="space-y-10">
+          {[
+            {
+              num: '01',
+              title: 'Hero Brand Banner',
+              file: 'hero.svg',
+              features: 'Rising-mask reveal for SUKANT BHATTACHARYA • 4 cycling roles (12s loop) • Blinking terminal cursor • Embedded stylized portrait with dual 3D gyro rings • Scanning laser beam',
+              accent: 'border-cyan-500/40'
+            },
+            {
+              num: '02',
+              title: 'Capabilities & 3-Slide Carousel',
+              file: 'about-life.svg',
+              features: 'Core capabilities matrix • 3-slide interests carousel changing every 4 seconds • 3 segmented progress bars (0-4s, 4-8s, 8-12s) • 3D volumetric spheres with specular highlights',
+              accent: 'border-rose-500/40'
+            },
+            {
+              num: '03',
+              title: 'Orbital 3D Tech Matrix',
+              file: 'stack.svg',
+              features: 'Three tilted 3D elliptical orbits with planetary nodes (Kotlin, Android, Compose, Python, Gemini AI, PyTorch, Docker, Git) • Central 3D solar AI star reactor • Grouped stack chips below',
+              accent: 'border-purple-500/40'
+            },
+            {
+              num: '04',
+              title: 'Hanging Lanyard ID Dashboard',
+              file: 'id-dashboard.svg',
+              features: 'Damped pendulum drop entrance • Perpetual +/-1.7° 3D pendulum swing • Metallic specular clasp • Holographic rainbow diffraction sweep • Green laser barcode scanner line • Verified production metrics',
+              accent: 'border-emerald-500/40'
+            },
+            {
+              num: '05',
+              title: 'Connect with Pointing Hero',
+              file: 'connect.svg',
+              features: 'Real transparent right_pointing.png on the left pointing directly right • Swirling 3D portal gateway • Animated pointer reticle • Generously spaced social cards with updated email sukantxplodeprime@gmail.com',
+              accent: 'border-cyan-500/40'
+            }
+          ].map((item) => (
+            <div
+              key={item.file}
+              className={`bg-[#060c1d] border-2 ${item.accent} rounded-3xl p-6 sm:p-8 space-y-4 box-glow-multi transition hover:scale-[1.008] duration-300`}
+            >
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-4">
+                <div className="flex items-center gap-3">
+                  <span className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#00f5ff] to-[#ff0055] text-black font-black text-sm flex items-center justify-center font-mono">
+                    {item.num}
+                  </span>
+                  <div>
+                    <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                      <span>{item.title}</span>
+                      <span className="text-xs font-mono font-normal text-cyan-400">assets/{item.file}?v=1</span>
+                    </h3>
+                    <p className="text-xs text-slate-400 mt-0.5">{item.features}</p>
                   </div>
+                </div>
 
-                  <p className="text-xs text-slate-300 leading-relaxed">{item.detail}</p>
+                <div className="flex items-center gap-2">
+                  <a
+                    href={`/assets/${item.file}`}
+                    download={item.file}
+                    onClick={() => playSynthBeep(640, 'triangle', 0.1)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-xs font-mono text-cyan-400 border border-cyan-500/30 transition"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Download SVG</span>
+                  </a>
+                </div>
+              </div>
 
-                  <div className="bg-[#070b16] p-4 rounded-xl border border-slate-800 flex justify-center overflow-hidden">
+              {/* Responsive Container */}
+              <div className="flex justify-center py-2">
+                <div
+                  className={`w-full transition-all duration-300 ${
+                    viewport === 'mobile'
+                      ? 'max-w-[375px]'
+                      : viewport === 'tablet'
+                      ? 'max-w-[768px]'
+                      : 'max-w-[920px]'
+                  }`}
+                >
+                  <div
+                    className={`rounded-2xl p-4 sm:p-6 border border-slate-800/80 shadow-2xl ${
+                      bgTheme === 'checker'
+                        ? 'bg-[#0f172a] bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:16px_16px]'
+                        : bgTheme === 'github'
+                        ? 'bg-[#0d1117] border-[#30363d]'
+                        : 'bg-[#040711]'
+                    }`}
+                  >
                     <img
                       src={`/assets/${item.file}?v=1&t=${refreshKey}`}
-                      alt={item.name}
-                      className="w-full max-w-[900px] h-auto rounded-lg shadow-xl"
+                      alt={item.title}
+                      className="w-full h-auto block rounded-xl"
                       style={
                         timelineSec === 'static'
                           ? { animationPlayState: 'paused' }
@@ -747,455 +756,706 @@ export default function App() {
                     />
                   </div>
                 </div>
-              ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ============================================================== */}
+      {/* SECTION 3: 3D INTERACTIVE SKILLS GALAXY */}
+      {/* ============================================================== */}
+      <section id="galaxy" className="py-24 px-4 lg:px-8 max-w-7xl mx-auto space-y-10 relative">
+        <div className="text-center space-y-3">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-xs font-mono text-purple-400 font-bold">
+            <Compass className="w-3.5 h-3.5" />
+            <span>INTERACTIVE SKILLS GALAXY &amp; KINETIC PROFICIENCY</span>
+          </div>
+          <h2 className="text-3xl sm:text-5xl font-black text-white neon-glow-purple">
+            Architectural Mastery &amp; Tech Stacks
+          </h2>
+          <p className="text-sm text-slate-400 max-w-2xl mx-auto">
+            Deep-dive into the four core engineering domains that power Sukant's digital architecture.
+          </p>
+        </div>
+
+        {/* 4 Deep Domain Interactive Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[
+            {
+              domain: '01 / Native Android',
+              title: 'Mobile Architecture',
+              techs: ['Kotlin', 'Jetpack Compose', 'Coroutines / Flow', 'Room DB', 'Retrofit / OkHttp', 'Hilt / Koin'],
+              desc: 'Specialized in building fluid, 120fps reactive Android applications using modern declarative UI, MVI/MVVM clean architecture, and offline-first caches.',
+              accent: 'border-purple-500/40 text-purple-400 bg-purple-500/10'
+            },
+            {
+              domain: '02 / Artificial Intelligence',
+              title: 'Autonomous Voice & Agents',
+              techs: ['Gemini 2.5/3.0 SDK', 'Sub-Second Speech Core', 'Function Calling', 'Local Neural Models', 'FastAPI Middleware'],
+              desc: 'Architecting intelligent voice assistants like The Ultimate JARVIS with low-latency wake-word engines, autonomous tool invocation, and multi-modal sensory inputs.',
+              accent: 'border-rose-500/40 text-rose-400 bg-rose-500/10'
+            },
+            {
+              domain: '03 / Media & Systems',
+              title: 'Streaming & Video Engines',
+              techs: ['ExoPlayer / Media3', 'Dynamic Chunk Preloading', 'ExoMedia', 'Memory Profiling', 'Custom Shaders'],
+              desc: 'Engineered MovieBox streaming infrastructure with adaptive bitrate streaming, low-jitter playback buffer management, and bespoke Compose player gestures.',
+              accent: 'border-cyan-500/40 text-cyan-400 bg-cyan-500/10'
+            },
+            {
+              domain: '04 / DevOps & Infra',
+              title: 'CI/CD & Cloud Tooling',
+              techs: ['GitHub Actions CI/CD', 'Docker', 'Linux / Bash Scripting', 'Gradle Build Optimization', 'TypeScript / Web'],
+              desc: 'End-to-end continuous integration pipelines for automated APK signing, release artifact generation, unit/UI testing suites, and containerized microservices.',
+              accent: 'border-emerald-500/40 text-emerald-400 bg-emerald-500/10'
+            }
+          ].map((item, idx) => (
+            <div
+              key={idx}
+              className="bg-[#060c1d] border-2 border-slate-800 hover:border-cyan-400/60 rounded-3xl p-6 space-y-4 box-glow-multi transition-all duration-300 hover:-translate-y-2"
+            >
+              <div className={`inline-block px-2.5 py-1 rounded-lg text-xs font-mono font-bold border ${item.accent}`}>
+                {item.domain}
+              </div>
+              <h3 className="text-xl font-bold text-white">{item.title}</h3>
+              <p className="text-xs text-slate-400 leading-relaxed">{item.desc}</p>
+
+              <div className="pt-2 border-t border-slate-800/80">
+                <span className="text-[11px] font-mono text-slate-500 uppercase tracking-wider block mb-2">Technologies</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {item.techs.map((t) => (
+                    <span
+                      key={t}
+                      className="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-900 text-slate-300 border border-slate-800"
+                    >
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ============================================================== */}
+      {/* SECTION 4: PRODUCTION REPOSITORIES & INTERACTIVE SIMULATORS */}
+      {/* ============================================================== */}
+      <section id="projects" className="py-24 px-4 lg:px-8 max-w-7xl mx-auto space-y-12 relative">
+        <div className="text-center space-y-3">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-rose-500/10 border border-rose-500/30 text-xs font-mono text-rose-400 font-bold">
+            <Cpu className="w-3.5 h-3.5" />
+            <span>PRODUCTION ARTIFACTS &amp; LIVE DEMOS</span>
+          </div>
+          <h2 className="text-3xl sm:text-5xl font-black text-white neon-glow-crimson">
+            Featured Repositories &amp; Hardware Engines
+          </h2>
+          <p className="text-sm text-slate-400 max-w-2xl mx-auto">
+            Interact with live simulators of Sukant's key production applications.
+          </p>
+        </div>
+
+        {/* Project 1: The Ultimate JARVIS Interactive Voice AI Console */}
+        <div className="bg-[#060c1d] border-2 border-cyan-500/40 rounded-3xl p-6 sm:p-10 box-glow-cyan space-y-6">
+          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center border border-cyan-400/40">
+                <Mic className="w-6 h-6 animate-pulse" />
+              </div>
+              <div>
+                <span className="text-xs font-mono text-cyan-400 font-bold uppercase">FEATURED REPO 01 // AUTONOMOUS VOICE AI</span>
+                <h3 className="text-2xl font-black text-white">The Ultimate JARVIS</h3>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="px-3 py-1 rounded-full text-xs font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                ● Live Agent Console
+              </span>
+              <a
+                href="https://github.com/sukantcodes"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-black font-mono text-xs font-bold transition"
+              >
+                <span>GitHub Repo</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
             </div>
           </div>
-        )}
 
-        {/* TAB 3: CHARACTER ASSET STUDIO & PHOTOS */}
-        {activeTab === 'characters' && (
-          <div className="space-y-6">
-            <div className="bg-[#0b1122] border border-slate-800 rounded-xl p-5 shadow-sm">
-              <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                <User className="w-5 h-5 text-blue-400" />
-                <span>Character Asset Studio: Real Photos to Transparent PNGs</span>
-              </h2>
-              <p className="text-xs text-slate-400 mt-1 max-w-3xl">
-                Page 1 of the Profile Playbook strictly specifies creating two character assets from the user's real photos:
-                <strong> id.png</strong> (Stylized Portrait) and <strong> right_pointing.png</strong> (Right-Pointing Character)
-                with genuinely transparent alpha backgrounds (no baked-in checkerboards or solid squares).
-              </p>
-            </div>
+          <p className="text-sm text-slate-300 leading-relaxed max-w-3xl">
+            A native Android voice assistant powered by on-device voice activity detection, sub-second speech recognition, and the Gemini API for multi-turn autonomous device control and reasoning.
+          </p>
 
-            {/* Generated Target PNGs Inspection */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Asset 1: id.png */}
-              <div className="bg-[#0b1122] border border-slate-800 rounded-xl p-6 space-y-4">
-                <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                  <div>
-                    <span className="text-[11px] font-mono font-bold text-blue-400">PLAYBOOK ASSET 01</span>
-                    <h3 className="text-base font-bold text-white">id.png (The Stylized Portrait)</h3>
-                    <p className="text-xs font-mono text-slate-400">assets/id.png (353 KB, 600x600 PNG)</p>
-                  </div>
-                  <a
-                    href="/assets/id.png"
-                    download="id.png"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow transition"
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                    <span>Download PNG</span>
-                  </a>
-                </div>
-
-                <div className="text-xs text-slate-300 space-y-1">
-                  <p>• Preserves recognizable face, skin tone, hairstyle, and facial features from uploaded studio photo.</p>
-                  <p>• Electric-blue (#247bff) and crimson (#ff354f) rim glow styling along the perimeter.</p>
-                  <p>• Fully keyed transparent alpha channel for seamless compositing on GitHub dark and light modes.</p>
-                </div>
-
-                {/* Alpha Verification Container */}
-                <div className="grid grid-cols-2 gap-3 pt-2">
-                  <div className="bg-[#070b16] p-4 rounded-xl border border-slate-800 text-center space-y-2">
-                    <span className="text-[10px] font-mono text-blue-400">Dark Navy Mode</span>
-                    <div className="h-48 flex items-center justify-center">
-                      <img src="/assets/id.png" alt="id.png dark" className="max-h-full max-w-full object-contain" />
-                    </div>
-                  </div>
-
-                  <div className="bg-[#f1f5f9] p-4 rounded-xl border border-slate-300 text-center space-y-2">
-                    <span className="text-[10px] font-mono text-slate-700 font-bold">Light Mode Test</span>
-                    <div className="h-48 flex items-center justify-center">
-                      <img src="/assets/id.png" alt="id.png light" className="max-h-full max-w-full object-contain" />
-                    </div>
-                  </div>
-                </div>
+          {/* Interactive Simulated Voice Agent Box */}
+          <div className="bg-[#030713] border border-cyan-500/30 rounded-2xl p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Radio className="w-4 h-4 text-cyan-400 animate-spin" />
+                <span className="text-xs font-mono text-slate-400">JARVIS NEURAL CORE // SPEECH PIPELINE</span>
               </div>
-
-              {/* Asset 2: right_pointing.png */}
-              <div className="bg-[#0b1122] border border-slate-800 rounded-xl p-6 space-y-4">
-                <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                  <div>
-                    <span className="text-[11px] font-mono font-bold text-rose-400">PLAYBOOK ASSET 02</span>
-                    <h3 className="text-base font-bold text-white">right_pointing.png (Pointing Pose)</h3>
-                    <p className="text-xs font-mono text-slate-400">assets/right_pointing.png (125 KB, 600x750 PNG)</p>
-                  </div>
-                  <a
-                    href="/assets/right_pointing.png"
-                    download="right_pointing.png"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold shadow transition"
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                    <span>Download PNG</span>
-                  </a>
-                </div>
-
-                <div className="text-xs text-slate-300 space-y-1">
-                  <p>• Matched identity in dark checkered streetwear, silver necklace, and wristband from user photos.</p>
-                  <p>• Natural hand pose pointing toward the viewer's RIGHT, guiding eyes directly to social cards.</p>
-                  <p>• Transparent alpha background with cyber pulse indicator at fingertip.</p>
-                </div>
-
-                {/* Alpha Verification Container */}
-                <div className="grid grid-cols-2 gap-3 pt-2">
-                  <div className="bg-[#070b16] p-4 rounded-xl border border-slate-800 text-center space-y-2">
-                    <span className="text-[10px] font-mono text-blue-400">Dark Navy Mode</span>
-                    <div className="h-48 flex items-center justify-center">
-                      <img
-                        src="/assets/right_pointing.png"
-                        alt="right_pointing dark"
-                        className="max-h-full max-w-full object-contain"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="bg-[#f1f5f9] p-4 rounded-xl border border-slate-300 text-center space-y-2">
-                    <span className="text-[10px] font-mono text-slate-700 font-bold">Light Mode Test</span>
-                    <div className="h-48 flex items-center justify-center">
-                      <img
-                        src="/assets/right_pointing.png"
-                        alt="right_pointing light"
-                        className="max-h-full max-w-full object-contain"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Uploaded User Photo References Gallery */}
-            <div className="bg-[#0b1122] border border-slate-800 rounded-xl p-6 space-y-4">
-              <h3 className="font-bold text-base text-white flex items-center gap-2">
-                <ImageIcon className="w-4 h-4 text-blue-400" />
-                <span>Uploaded Source Photos ({userPhotos.length} Images Provided by User)</span>
-              </h3>
-              <p className="text-xs text-slate-400">
-                These are the real photos uploaded by the user to the workspace. Each was analyzed to preserve likeness, hairstyle, skin tone, clothing style, and demeanor.
-              </p>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
-                {userPhotos.map((photo, idx) => (
-                  <div key={idx} className="bg-[#070b16] border border-slate-800/80 rounded-xl p-3 space-y-2.5">
-                    <div className="aspect-[3/4] rounded-lg overflow-hidden bg-slate-900 border border-slate-800 relative group">
-                      <img
-                        src={photo.path}
-                        alt={photo.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
-                      />
-                      <div className="absolute top-2 left-2 bg-black/75 px-2 py-0.5 rounded text-[10px] font-mono text-slate-300">
-                        REF 0{idx + 1}
-                      </div>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-xs text-white">{photo.title}</h4>
-                      <p className="text-[11px] text-slate-400 mt-0.5 leading-relaxed">{photo.desc}</p>
-                    </div>
-                  </div>
+              <div className="flex items-center gap-1">
+                {[40, 70, 30, 90, 60, 80, 45, 95, 65, 35].map((h, i) => (
+                  <span
+                    key={i}
+                    className={`w-1 rounded-full bg-cyan-400 transition-all duration-300 ${
+                      jarvisActive ? 'animate-pulse' : 'opacity-40'
+                    }`}
+                    style={{ height: jarvisActive ? `${h}%` : '10px' }}
+                  />
                 ))}
               </div>
             </div>
-          </div>
-        )}
 
-        {/* TAB 4: GITHUB DEPLOY & UPLOAD PLAYBOOK */}
-        {activeTab === 'deploy' && (
-          <div className="space-y-6">
-            <div className="bg-[#0b1122] border border-slate-800 rounded-xl p-5 shadow-sm">
-              <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                <FolderArchive className="w-5 h-5 text-blue-400" />
-                <span>GitHub Profile Repository Deployment Playbook</span>
-              </h2>
-              <p className="text-xs text-slate-400 mt-1">
-                Direct implementation of Page 3 of the Profile Playbook ("PUT IT ON YOUR PROFILE"). Follow these exact 4 steps to activate your new animated README.
-              </p>
-            </div>
-
-            {/* 4 Steps Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-[#070b16] border border-slate-800 rounded-xl p-5 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="w-7 h-7 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center font-mono font-bold text-xs">
-                    01
-                  </span>
-                  <span className="text-[11px] font-mono text-slate-500">github.com</span>
+            {/* Simulated Query & Output Screen */}
+            <div className="bg-[#060a18] p-4 rounded-xl border border-slate-800 font-mono text-xs space-y-2">
+              {jarvisQuery && (
+                <div className="text-cyan-400">
+                  <span className="text-slate-500">&gt; USER VOICE QUERY:</span> "{jarvisQuery}"
                 </div>
-                <h3 className="font-bold text-sm text-white">Target Repository</h3>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  Open your profile repository on GitHub:
-                  <a
-                    href="https://github.com/sukantcodes/sukantcodes"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-blue-400 hover:underline font-mono block mt-1"
-                  >
-                    https://github.com/sukantcodes/sukantcodes
-                  </a>
-                  If already created, switch to branch <span className="font-mono text-slate-200">main</span>.
-                </p>
-              </div>
-
-              <div className="bg-[#070b16] border border-slate-800 rounded-xl p-5 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="w-7 h-7 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center font-mono font-bold text-xs">
-                    02
-                  </span>
-                  <span className="text-[11px] font-mono text-slate-500">Unpack Package</span>
-                </div>
-                <h3 className="font-bold text-sm text-white">Download &amp; Unzip</h3>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  Click the <strong>Download ZIP</strong> button at the top. Unzip the file to find:
-                  <code className="text-blue-300 font-mono text-[11px] block mt-1">
-                    README.md and assets/ (containing all 5 SVGs + 2 PNGs)
-                  </code>
-                </p>
-              </div>
-
-              <div className="bg-[#070b16] border border-slate-800 rounded-xl p-5 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="w-7 h-7 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center font-mono font-bold text-xs">
-                    03
-                  </span>
-                  <span className="text-[11px] font-mono text-slate-500">Add File &gt; Upload</span>
-                </div>
-                <h3 className="font-bold text-sm text-white">Upload Files into Repo</h3>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  In GitHub, click <strong>Add file &gt; Upload files</strong>. Drag in both <strong>README.md</strong> and the <strong>assets/</strong> folder. Add commit message <em>"feat: customize animated profile playbook suite"</em> and commit to <strong>main</strong>.
-                </p>
-              </div>
-
-              <div className="bg-[#070b16] border border-slate-800 rounded-xl p-5 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-mono font-bold text-xs">
-                    04
-                  </span>
-                  <span className="text-[11px] font-mono text-slate-500">Check Profile</span>
-                </div>
-                <h3 className="font-bold text-sm text-white">Verify Live Profile</h3>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  Visit <a href="https://github.com/sukantcodes" target="_blank" rel="noreferrer" className="text-blue-400 hover:underline font-mono">github.com/sukantcodes</a>. All 5 images load through GitHub Camo CDN with <span className="font-mono text-slate-200">?v=1</span> cache tags, and all social/project links open properly!
-                </p>
+              )}
+              <div className="text-emerald-400 flex items-start gap-2">
+                <span className="text-slate-500">&gt; JARVIS:</span>
+                <span className="text-slate-200">{jarvisLog}</span>
               </div>
             </div>
 
-            {/* Note about GitHub API Token / Direct Commit Access */}
-            <div className="bg-gradient-to-r from-blue-950/40 to-slate-900 border border-blue-500/30 rounded-xl p-5 space-y-3">
-              <div className="flex items-center gap-2">
-                <Shield className="w-4 h-4 text-blue-400" />
-                <h4 className="font-semibold text-sm text-white">Direct Git Sync vs Upload Package</h4>
-              </div>
-              <p className="text-xs text-slate-300 leading-relaxed">
-                As per standard cloud container isolation and security, external write permissions to personal GitHub repositories require your GitHub Personal Access Token or direct upload via the web interface. All required files have been created in the root of this repository (<code className="text-blue-400">/README.md</code>, <code className="text-blue-400">/assets/*</code>, <code className="text-blue-400">/preview.html</code>) and packaged into an upload-ready archive (<code className="text-blue-400">profile-assets.zip</code>).
-              </p>
-              <div className="flex flex-wrap gap-3 pt-1">
-                <a
-                  href="/profile-assets.zip"
-                  download="profile-assets.zip"
-                  className="inline-flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white transition"
-                >
-                  <Download className="w-3.5 h-3.5" />
-                  <span>Download profile-assets.zip</span>
-                </a>
+            {/* Quick Voice Command Buttons */}
+            <div>
+              <span className="text-[11px] font-mono text-slate-500 block mb-2">Simulate Voice Queries:</span>
+              <div className="flex flex-wrap gap-2">
                 <button
-                  onClick={copyReadme}
-                  className="inline-flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition"
+                  onClick={() =>
+                    runJarvisCommand(
+                      "Jarvis, check battery status and optimize background memory",
+                      "Diagnostics complete: Battery at 88%. Cleared 4 inactive memory caches. 120Hz refresh sustained."
+                    )
+                  }
+                  className="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-cyan-400 text-xs text-slate-300 transition"
                 >
-                  <Copy className="w-3.5 h-3.5" />
-                  <span>Copy README.md Content</span>
+                  ⚡ Battery &amp; Memory Diagnostics
+                </button>
+
+                <button
+                  onClick={() =>
+                    runJarvisCommand(
+                      "Jarvis, open MovieBox and preload current trending stream",
+                      "Launching MovieBox activity. Initializing ExoPlayer chunk preloader. Buffering 1080p stream."
+                    )
+                  }
+                  className="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-rose-400 text-xs text-slate-300 transition"
+                >
+                  🎬 Launch MovieBox &amp; Preload
+                </button>
+
+                <button
+                  onClick={() =>
+                    runJarvisCommand(
+                      "Jarvis, summarize Sukant's latest GitHub commit activity",
+                      "Active repository: sukantcodes/sukantcodes. Commits db61825 and 53bb874 verified on main branch."
+                    )
+                  }
+                  className="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-purple-400 text-xs text-slate-300 transition"
+                >
+                  🌐 Query GitHub Commits
                 </button>
               </div>
             </div>
           </div>
-        )}
+        </div>
 
-        {/* TAB 5: REPOSITORY FILE TREE */}
-        {activeTab === 'files' && (
-          <div className="space-y-6">
-            <div className="bg-[#0b1122] border border-slate-800 rounded-xl p-5 shadow-sm">
-              <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                <Code className="w-5 h-5 text-blue-400" />
-                <span>Generated Repository Files Checklist</span>
-              </h2>
-              <p className="text-xs text-slate-400 mt-1">
-                Verified files created in workspace root and assets folder according to the Playbook specification.
+        {/* Project 2: MovieBox Streaming Engine */}
+        <div className="bg-[#060c1d] border-2 border-rose-500/40 rounded-3xl p-6 sm:p-10 box-glow-crimson space-y-6">
+          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-rose-500/20 text-rose-400 flex items-center justify-center border border-rose-400/40">
+                <Flame className="w-6 h-6 animate-pulse" />
+              </div>
+              <div>
+                <span className="text-xs font-mono text-rose-400 font-bold uppercase">FEATURED REPO 02 // COMPOSE STREAMING</span>
+                <h3 className="text-2xl font-black text-white">MovieBox Streaming Engine</h3>
+              </div>
+            </div>
+
+            <a
+              href="https://github.com/sukantcodes"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-mono text-xs font-bold transition"
+            >
+              <span>GitHub Repo</span>
+              <ExternalLink className="w-3 h-3" />
+            </a>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 space-y-4">
+              <p className="text-sm text-slate-300 leading-relaxed">
+                MovieBox is a sleek, modern media streaming client built with declarative Jetpack Compose UI, ExoPlayer integration, dynamic chunk preloading, and reactive Room offline caching.
               </p>
+              <div className="grid grid-cols-3 gap-3 pt-2">
+                <div className="bg-[#0b1428] p-3 rounded-xl border border-slate-800">
+                  <span className="text-xs font-mono text-rose-400 font-bold block">120Hz</span>
+                  <span className="text-[11px] text-slate-400">Compose UI FPS</span>
+                </div>
+                <div className="bg-[#0b1428] p-3 rounded-xl border border-slate-800">
+                  <span className="text-xs font-mono text-cyan-400 font-bold block">Adaptive</span>
+                  <span className="text-[11px] text-slate-400">ExoPlayer Buffer</span>
+                </div>
+                <div className="bg-[#0b1428] p-3 rounded-xl border border-slate-800">
+                  <span className="text-xs font-mono text-emerald-400 font-bold block">Offline-First</span>
+                  <span className="text-[11px] text-slate-400">Room DB Cache</span>
+                </div>
+              </div>
             </div>
 
-            <div className="bg-[#070b16] border border-slate-800 rounded-xl overflow-hidden">
-              <table className="w-full text-left border-collapse text-xs">
-                <thead>
-                  <tr className="border-b border-slate-800 bg-slate-900/60 font-mono text-slate-400">
-                    <th className="py-3 px-4">File Path</th>
-                    <th className="py-3 px-4">Type</th>
-                    <th className="py-3 px-4">Role &amp; Details</th>
-                    <th className="py-3 px-4">Status</th>
-                    <th className="py-3 px-4 text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800/60 font-mono text-slate-300">
-                  <tr>
-                    <td className="py-3 px-4 text-blue-400 font-bold">/README.md</td>
-                    <td className="py-3 px-4 text-slate-400">Markdown</td>
-                    <td className="py-3 px-4 font-sans text-slate-300">
-                      GitHub profile document linking all 5 SVGs with ?v=1, clickable badges and projects table.
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className="text-emerald-400 text-xs font-sans">✓ Verified</span>
-                    </td>
-                    <td className="py-3 px-4 text-right">
-                      <a href="/README.md" download className="text-blue-400 hover:underline">Download</a>
-                    </td>
-                  </tr>
-
-                  <tr>
-                    <td className="py-3 px-4 text-blue-400 font-bold">/assets/hero.svg</td>
-                    <td className="py-3 px-4 text-slate-400">SVG Image</td>
-                    <td className="py-3 px-4 font-sans text-slate-300">
-                      Typed greeting, rising-mask name reveal, 4 cycling roles, pitch, portrait halo.
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className="text-emerald-400 text-xs font-sans">✓ Verified</span>
-                    </td>
-                    <td className="py-3 px-4 text-right">
-                      <a href="/assets/hero.svg" download className="text-blue-400 hover:underline">Download</a>
-                    </td>
-                  </tr>
-
-                  <tr>
-                    <td className="py-3 px-4 text-blue-400 font-bold">/assets/about-life.svg</td>
-                    <td className="py-3 px-4 text-slate-400">SVG Image</td>
-                    <td className="py-3 px-4 font-sans text-slate-300">
-                      Capabilities beside 3-slide interests carousel with segment progress bars.
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className="text-emerald-400 text-xs font-sans">✓ Verified</span>
-                    </td>
-                    <td className="py-3 px-4 text-right">
-                      <a href="/assets/about-life.svg" download className="text-blue-400 hover:underline">Download</a>
-                    </td>
-                  </tr>
-
-                  <tr>
-                    <td className="py-3 px-4 text-blue-400 font-bold">/assets/stack.svg</td>
-                    <td className="py-3 px-4 text-slate-400">SVG Image</td>
-                    <td className="py-3 px-4 font-sans text-slate-300">
-                      Three-tier tilted elliptical orbits with planetary nodes and grouped chips.
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className="text-emerald-400 text-xs font-sans">✓ Verified</span>
-                    </td>
-                    <td className="py-3 px-4 text-right">
-                      <a href="/assets/stack.svg" download className="text-blue-400 hover:underline">Download</a>
-                    </td>
-                  </tr>
-
-                  <tr>
-                    <td className="py-3 px-4 text-blue-400 font-bold">/assets/id-dashboard.svg</td>
-                    <td className="py-3 px-4 text-slate-400">SVG Image</td>
-                    <td className="py-3 px-4 font-sans text-slate-300">
-                      Hanging lanyard ID, damped pendulum entrance, +/-1.7° swing, foil sweep, barcode.
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className="text-emerald-400 text-xs font-sans">✓ Verified</span>
-                    </td>
-                    <td className="py-3 px-4 text-right">
-                      <a href="/assets/id-dashboard.svg" download className="text-blue-400 hover:underline">Download</a>
-                    </td>
-                  </tr>
-
-                  <tr>
-                    <td className="py-3 px-4 text-blue-400 font-bold">/assets/connect.svg</td>
-                    <td className="py-3 px-4 text-slate-400">SVG Image</td>
-                    <td className="py-3 px-4 font-sans text-slate-300">
-                      Right-pointing character, generously spaced social cards, nudging arrows.
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className="text-emerald-400 text-xs font-sans">✓ Verified</span>
-                    </td>
-                    <td className="py-3 px-4 text-right">
-                      <a href="/assets/connect.svg" download className="text-blue-400 hover:underline">Download</a>
-                    </td>
-                  </tr>
-
-                  <tr>
-                    <td className="py-3 px-4 text-rose-400 font-bold">/assets/id.png</td>
-                    <td className="py-3 px-4 text-slate-400">PNG Alpha</td>
-                    <td className="py-3 px-4 font-sans text-slate-300">
-                      Transparent alpha stylized profile portrait from user photo with rim glow.
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className="text-emerald-400 text-xs font-sans">✓ Verified</span>
-                    </td>
-                    <td className="py-3 px-4 text-right">
-                      <a href="/assets/id.png" download className="text-blue-400 hover:underline">Download</a>
-                    </td>
-                  </tr>
-
-                  <tr>
-                    <td className="py-3 px-4 text-rose-400 font-bold">/assets/right_pointing.png</td>
-                    <td className="py-3 px-4 text-slate-400">PNG Alpha</td>
-                    <td className="py-3 px-4 font-sans text-slate-300">
-                      Transparent alpha pointing character from user photo facing right.
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className="text-emerald-400 text-xs font-sans">✓ Verified</span>
-                    </td>
-                    <td className="py-3 px-4 text-right">
-                      <a href="/assets/right_pointing.png" download className="text-blue-400 hover:underline">Download</a>
-                    </td>
-                  </tr>
-
-                  <tr>
-                    <td className="py-3 px-4 text-amber-400 font-bold">/preview.html</td>
-                    <td className="py-3 px-4 text-slate-400">HTML Suite</td>
-                    <td className="py-3 px-4 font-sans text-slate-300">
-                      Standalone test harness with 0/2/5/9/13s scrubber, alpha checkerboard &amp; viewport toggle.
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className="text-emerald-400 text-xs font-sans">✓ Verified</span>
-                    </td>
-                    <td className="py-3 px-4 text-right">
-                      <a href="/preview.html" target="_blank" rel="noreferrer" className="text-blue-400 hover:underline">Open</a>
-                    </td>
-                  </tr>
-
-                  <tr>
-                    <td className="py-3 px-4 text-emerald-400 font-bold">/profile-assets.zip</td>
-                    <td className="py-3 px-4 text-slate-400">ZIP Package</td>
-                    <td className="py-3 px-4 font-sans text-slate-300">
-                      Upload-ready bundle containing README.md and entire assets/ directory.
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className="text-emerald-400 text-xs font-sans">✓ Verified</span>
-                    </td>
-                    <td className="py-3 px-4 text-right">
-                      <a href="/profile-assets.zip" download className="text-blue-400 hover:underline font-bold">Download</a>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+            {/* Simulated Phone Mockup */}
+            <div className="bg-[#040817] border-2 border-slate-800 rounded-2xl p-4 flex flex-col justify-between space-y-3">
+              <div className="flex items-center justify-between text-[11px] font-mono text-slate-400">
+                <span>MOVIEBOX // MOBILE PREVIEW</span>
+                <span className="text-emerald-400">● 4K BUFFER</span>
+              </div>
+              <div className="h-28 rounded-xl bg-gradient-to-tr from-rose-950/40 via-purple-950/40 to-slate-900 border border-rose-500/30 flex items-center justify-center relative overflow-hidden">
+                <Play className="w-10 h-10 text-rose-400/80 animate-pulse" />
+                <div className="absolute bottom-2 left-3 right-3 h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                  <div className="w-2/3 h-full bg-rose-500" />
+                </div>
+              </div>
+              <div className="text-[11px] font-mono text-slate-400 text-center">
+                Jetpack Compose + ExoMedia Player
+              </div>
             </div>
-          </div>
-        )}
-      </main>
-
-      {/* Footer */}
-      <footer className="border-t border-slate-800/80 bg-[#070b16] py-6 px-4 text-center text-xs text-slate-500">
-        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <span className="font-mono text-slate-400">sukantcodes // The Profile Playbook Suite</span>
-          </div>
-          <div className="flex items-center gap-4 text-slate-400">
-            <span>Palette: #070b16 • #247bff • #ff354f</span>
-            <span>Self-Contained SVGs</span>
-            <span>Zero External Dependencies</span>
           </div>
         </div>
+      </section>
+
+      {/* ============================================================== */}
+      {/* SECTION 5: 3D INTERACTIVE DEVELOPER LANYARD ID PASS */}
+      {/* ============================================================== */}
+      <section id="lanyard" className="py-24 px-4 lg:px-8 max-w-7xl mx-auto space-y-8 relative">
+        <div className="text-center space-y-3">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-xs font-mono text-cyan-400 font-bold">
+            <Lock className="w-3.5 h-3.5" />
+            <span>INTERACTIVE 3D HOLOGRAPHIC BADGE</span>
+          </div>
+          <h2 className="text-3xl sm:text-5xl font-black text-white neon-glow-cyan">
+            Interactive Developer Pass
+          </h2>
+          <p className="text-sm text-slate-400 max-w-xl mx-auto">
+            Click the card to flip between front and back. Toggle the green laser barcode scanner.
+          </p>
+        </div>
+
+        {/* 3D Flip Card Container */}
+        <div className="flex justify-center perspective-1000">
+          <div
+            onClick={() => {
+              setIdCardFlipped(!idCardFlipped);
+              playSynthBeep(680, 'triangle', 0.12);
+            }}
+            className="w-full max-w-[340px] h-[500px] cursor-pointer relative preserve-3d transition-transform duration-700 ease-in-out"
+            style={{
+              transform: idCardFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)'
+            }}
+          >
+            {/* FRONT OF BADGE */}
+            <div className="absolute inset-0 backface-hidden rounded-3xl bg-[#091124] border-2 border-cyan-400 p-6 flex flex-col justify-between box-glow-multi shadow-2xl overflow-hidden">
+              {/* Lanyard Top Punch */}
+              <div className="w-14 h-4 bg-[#030611] rounded-full mx-auto border border-cyan-500/40" />
+
+              {/* Header */}
+              <div className="flex items-center justify-between text-xs font-mono border-b border-slate-800 pb-2">
+                <span className="text-[#00ff9d] font-bold flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                  DEV PASS // 2026
+                </span>
+                <span className="text-cyan-400">#DEV-SKNT-AI</span>
+              </div>
+
+              {/* Character Photo with Holographic Sheen */}
+              <div className="relative w-40 h-40 mx-auto rounded-2xl overflow-hidden border border-cyan-400/50 bg-[#040817] shadow-xl">
+                <img
+                  src="/assets/id.png"
+                  alt="Sukant Photo"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent pointer-events-none" />
+              </div>
+
+              {/* Developer Details */}
+              <div className="text-center space-y-1">
+                <h4 className="text-lg font-black text-white">SUKANT BHATTACHARYA</h4>
+                <p className="text-xs font-mono text-cyan-400">Android &amp; AI Systems Architect</p>
+                <p className="text-[11px] font-mono text-rose-400 font-bold">@sukantcodes</p>
+              </div>
+
+              {/* Barcode with Active Laser Beam */}
+              <div className="relative bg-[#040711] p-3 rounded-xl border border-slate-800 text-center">
+                <div className="h-6 flex items-center justify-center gap-1">
+                  {[3, 1, 4, 2, 5, 2, 1, 4, 2, 3, 1, 5, 2, 4, 1, 3, 2, 4].map((w, i) => (
+                    <span key={i} className="bg-slate-300 h-full" style={{ width: `${w * 1.5}px` }} />
+                  ))}
+                </div>
+                {laserActive && (
+                  <div className="absolute left-3 right-3 h-0.5 bg-emerald-400 animate-pulse box-glow-cyan" style={{ top: '50%' }} />
+                )}
+                <span className="text-[9px] font-mono text-slate-500 block mt-1">CLICK CARD TO FLIP (3D BACK)</span>
+              </div>
+            </div>
+
+            {/* BACK OF BADGE */}
+            <div
+              className="absolute inset-0 backface-hidden rounded-3xl bg-[#091124] border-2 border-rose-500 p-6 flex flex-col justify-between box-glow-crimson shadow-2xl overflow-hidden"
+              style={{ transform: 'rotateY(180deg)' }}
+            >
+              <div className="w-14 h-4 bg-[#030611] rounded-full mx-auto border border-rose-500/40" />
+
+              <div className="text-center space-y-1 border-b border-slate-800 pb-3">
+                <span className="text-xs font-mono text-rose-400 font-bold">CRYPTOGRAPHIC PASS VERIFICATION</span>
+                <h4 className="text-base font-bold text-white">SUKANT CODES // IDENTITY</h4>
+              </div>
+
+              {/* Simulated QR Code */}
+              <div className="w-36 h-36 mx-auto bg-white p-2 rounded-2xl flex items-center justify-center">
+                <div className="w-full h-full bg-[#030611] rounded-xl flex items-center justify-center text-center p-2 text-white font-mono text-[10px]">
+                  <span>github.com/sukantcodes</span>
+                </div>
+              </div>
+
+              <div className="font-mono text-[11px] text-slate-400 space-y-1.5 bg-[#040817] p-3 rounded-xl border border-slate-800">
+                <div>EMAIL: <span className="text-rose-400 font-bold">sukantxplodeprime@gmail.com</span></div>
+                <div>BRANCH: <span className="text-cyan-400">main</span></div>
+                <div>HASH: <span className="text-purple-400 font-mono">53bb874...db61825</span></div>
+                <div>ISSUED: <span className="text-emerald-400">NOV 2026 // PLAYBOOK</span></div>
+              </div>
+
+              <div className="text-center text-[10px] font-mono text-slate-500">
+                CLICK TO RETURN TO FRONT
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================================== */}
+      {/* SECTION 6: MOUNTAIN HORIZONS & PHOTOGRAPHIC ODYSSEY */}
+      {/* ============================================================== */}
+      <section id="photos" className="py-24 px-4 lg:px-8 max-w-7xl mx-auto space-y-10 relative">
+        <div className="text-center space-y-3">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-xs font-mono text-emerald-400 font-bold">
+            <ImageIcon className="w-3.5 h-3.5" />
+            <span>REAL REFERENCE PHOTOS GALLERY &amp; CUTOUT ENGINE</span>
+          </div>
+          <h2 className="text-3xl sm:text-5xl font-black text-white neon-glow-green">
+            Mountain Horizons &amp; Real Identity
+          </h2>
+          <p className="text-sm text-slate-400 max-w-2xl mx-auto">
+            Review the 5 uploaded source photos and how their likeness, hairstyle, streetwear, and personality were extracted into transparent vector assets.
+          </p>
+        </div>
+
+        {/* 5 Real Photos Gallery */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          {[
+            {
+              title: 'Studio Portrait',
+              use: 'Extracted for id.png stylized vector face and rim light',
+              path: '/assets/aistudio/file_000000000e608211a4920d26f54dd0dd_d521a39d.jpg'
+            },
+            {
+              title: 'Streetwear & Silver Chain',
+              use: 'Extracted for right_pointing.png outfit and posture',
+              path: '/assets/aistudio/file_00000000069c8211bd36f08583048ccb_59e251c0.jpg'
+            },
+            {
+              title: 'Mountain Sunrise',
+              use: 'Inspiration for Carousel Slide 03: Field & Craft',
+              path: '/assets/aistudio/file_00000000b1e88211a8071e0a8b460325_61d0ae41.jpg'
+            },
+            {
+              title: 'Rooftop Vantage',
+              use: 'Casual streetwear attitude and urban perspective',
+              path: '/assets/aistudio/file_000000006c288211bb133e92f170170e_94f4f368.jpg'
+            },
+            {
+              title: 'Park Sunlight Pose',
+              use: 'Natural sunlight and relaxed arm rest posture',
+              path: '/assets/aistudio/file_00000000ef0c82118a0d01ead8452eb1_4f014dbd.jpg'
+            }
+          ].map((photo, i) => (
+            <div
+              key={i}
+              className="bg-[#060c1d] border-2 border-slate-800 hover:border-emerald-400/50 rounded-2xl p-3 space-y-2 box-glow-multi transition hover:scale-105 duration-300"
+            >
+              <div className="aspect-[3/4] rounded-xl overflow-hidden bg-slate-900 relative">
+                <img src={photo.path} alt={photo.title} className="w-full h-full object-cover" />
+                <span className="absolute top-2 left-2 px-2 py-0.5 rounded bg-black/80 font-mono text-[10px] text-emerald-400">
+                  PHOTO 0{i + 1}
+                </span>
+              </div>
+              <h4 className="font-bold text-xs text-white">{photo.title}</h4>
+              <p className="text-[11px] text-slate-400">{photo.use}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ============================================================== */}
+      {/* SECTION 7: 3D ENGINEERING ROADMAP */}
+      {/* ============================================================== */}
+      <section id="roadmap" className="py-24 px-4 lg:px-8 max-w-5xl mx-auto space-y-12 relative">
+        <div className="text-center space-y-3">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-xs font-mono text-cyan-400 font-bold">
+            <Activity className="w-3.5 h-3.5" />
+            <span>CHRONOLOGICAL MATRIX &amp; ENGINEERING EVOLUTION</span>
+          </div>
+          <h2 className="text-3xl sm:text-5xl font-black text-white neon-glow-cyan">
+            Architectural Milestones
+          </h2>
+        </div>
+
+        {/* Vertical Timeline */}
+        <div className="relative border-l-2 border-cyan-500/40 ml-4 sm:ml-32 space-y-10">
+          {[
+            {
+              year: '2024',
+              title: 'Mobile Engineering Foundations',
+              desc: 'Deep mastery of Kotlin, Android SDK lifecycle, Room persistence, and multi-threaded asynchronous Coroutines.'
+            },
+            {
+              year: '2025 Q1',
+              title: 'Jetpack Compose & Modern Declarative UI',
+              desc: 'Pivoted to full Compose UI paradigms, modular design tokens, 120Hz smooth micro-interactions, and MVI architectures.'
+            },
+            {
+              year: '2025 Q3',
+              title: 'The Ultimate JARVIS Voice AI Genesis',
+              desc: 'Built autonomous on-device Android voice assistant orchestrating speech recognition, Gemini API, and device automation.'
+            },
+            {
+              year: '2026 Q2',
+              title: 'MovieBox & Media Streaming Engine',
+              desc: 'Engineered custom ExoPlayer video preloading, dynamic chunk buffers, and responsive entertainment player.'
+            },
+            {
+              year: '2026 Q4',
+              title: 'The Profile Playbook 3D Vector Suite',
+              desc: 'Transformed static GitHub README into a 3D animated self-contained vector ecosystem for @sukantcodes.'
+            }
+          ].map((m, i) => (
+            <div key={i} className="relative pl-6 sm:pl-8 group">
+              <span className="absolute -left-[9px] top-1.5 w-4 h-4 rounded-full bg-[#030611] border-2 border-cyan-400 group-hover:scale-125 transition" />
+              <div className="bg-[#060c1d] border border-slate-800 group-hover:border-cyan-500/50 p-5 rounded-2xl box-glow-cyan transition">
+                <span className="text-xs font-mono font-bold text-cyan-400">{m.year}</span>
+                <h4 className="text-lg font-bold text-white mt-1">{m.title}</h4>
+                <p className="text-xs text-slate-300 mt-1 leading-relaxed">{m.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ============================================================== */}
+      {/* SECTION 8: INTERACTIVE CYBER TERMINAL */}
+      {/* ============================================================== */}
+      <section id="terminal" className="py-24 px-4 lg:px-8 max-w-4xl mx-auto space-y-8 relative">
+        <div className="text-center space-y-3">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-xs font-mono text-emerald-400 font-bold">
+            <TerminalIcon className="w-3.5 h-3.5" />
+            <span>INTERACTIVE CYBERNETIC SHELL</span>
+          </div>
+          <h2 className="text-3xl sm:text-5xl font-black text-white neon-glow-green">
+            Terminal Diagnostics Console
+          </h2>
+          <p className="text-sm text-slate-400">
+            Type <code className="text-emerald-400 font-mono">help</code>, <code className="text-emerald-400 font-mono">skills</code>, <code className="text-emerald-400 font-mono">projects</code>, <code className="text-emerald-400 font-mono">download</code>, or <code className="text-emerald-400 font-mono">matrix</code>.
+          </p>
+        </div>
+
+        {/* Terminal Window */}
+        <div className="bg-[#030713] border-2 border-emerald-500/40 rounded-3xl p-5 box-glow-cyan shadow-2xl font-mono text-xs">
+          {/* Terminal Titlebar */}
+          <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-3 text-slate-500">
+            <div className="flex items-center gap-2">
+              <span className="w-3 h-3 rounded-full bg-rose-500" />
+              <span className="w-3 h-3 rounded-full bg-amber-500" />
+              <span className="w-3 h-3 rounded-full bg-emerald-500" />
+              <span className="text-slate-400 ml-2">sukantcodes@cyber-host: ~</span>
+            </div>
+            <span>BASH 5.2</span>
+          </div>
+
+          {/* Logs */}
+          <div className="space-y-1.5 h-64 overflow-y-auto no-scrollbar text-slate-300">
+            {terminalLogs.map((log, i) => (
+              <div
+                key={i}
+                className={
+                  log.startsWith('>')
+                    ? 'text-cyan-400 font-bold'
+                    : log.includes('🟢') || log.includes('⚡')
+                    ? 'text-emerald-400'
+                    : 'text-slate-300'
+                }
+              >
+                {log}
+              </div>
+            ))}
+          </div>
+
+          {/* Command Input Prompt */}
+          <form onSubmit={handleTerminalSubmit} className="mt-3 pt-3 border-t border-slate-800 flex items-center gap-2">
+            <span className="text-emerald-400 font-bold">&gt;</span>
+            <input
+              type="text"
+              value={terminalInput}
+              onChange={(e) => setTerminalInput(e.target.value)}
+              placeholder="Type a command (e.g. 'skills', 'download', 'help')..."
+              className="w-full bg-transparent border-none outline-none text-emerald-300 font-mono text-xs placeholder:text-slate-600"
+            />
+            <button
+              type="submit"
+              className="px-3 py-1 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 hover:bg-emerald-500/30 transition text-xs font-mono"
+            >
+              RUN
+            </button>
+          </form>
+        </div>
+      </section>
+
+      {/* ============================================================== */}
+      {/* SECTION 9: 3D CONNECT & DIRECT TRANSMISSION */}
+      {/* ============================================================== */}
+      <section id="connect" className="py-24 px-4 lg:px-8 max-w-5xl mx-auto space-y-12 relative">
+        <div className="text-center space-y-3">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-xs font-mono text-cyan-400 font-bold">
+            <Radio className="w-3.5 h-3.5" />
+            <span>DIRECT TELEMETRY &amp; ENGAGEMENT</span>
+          </div>
+          <h2 className="text-3xl sm:text-5xl font-black text-white neon-glow-cyan">
+            Connect With Sukant
+          </h2>
+          <p className="text-sm text-slate-400 max-w-xl mx-auto">
+            Available for mobile architecture consulting, Android system contracts, and autonomous voice AI engineering.
+          </p>
+        </div>
+
+        {/* 4 Neon Touchpoint Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <a
+            href="https://github.com/sukantcodes"
+            target="_blank"
+            rel="noreferrer"
+            className="bg-[#060c1d] border-2 border-cyan-500/40 hover:border-cyan-400 p-5 rounded-2xl box-glow-cyan transition flex flex-col justify-between space-y-4 hover:-translate-y-1"
+          >
+            <div>
+              <span className="text-xs font-mono text-cyan-400 font-bold block">01 // CODE REPOSITORIES</span>
+              <h4 className="text-lg font-bold text-white mt-1">GitHub</h4>
+              <p className="text-xs text-slate-400 mt-1">@sukantcodes</p>
+            </div>
+            <span className="text-xs font-mono text-cyan-400 flex items-center gap-1">
+              Visit Profile <ArrowRight className="w-3.5 h-3.5" />
+            </span>
+          </a>
+
+          <a
+            href="https://linkedin.com/in/sukantcodes"
+            target="_blank"
+            rel="noreferrer"
+            className="bg-[#060c1d] border-2 border-blue-500/40 hover:border-blue-400 p-5 rounded-2xl box-glow-cyan transition flex flex-col justify-between space-y-4 hover:-translate-y-1"
+          >
+            <div>
+              <span className="text-xs font-mono text-blue-400 font-bold block">02 // PROFESSIONAL NETWORK</span>
+              <h4 className="text-lg font-bold text-white mt-1">LinkedIn</h4>
+              <p className="text-xs text-slate-400 mt-1">Sukant Bhattacharya</p>
+            </div>
+            <span className="text-xs font-mono text-blue-400 flex items-center gap-1">
+              Connect <ArrowRight className="w-3.5 h-3.5" />
+            </span>
+          </a>
+
+          <a
+            href="mailto:sukantxplodeprime@gmail.com"
+            className="bg-[#060c1d] border-2 border-rose-500/40 hover:border-rose-400 p-5 rounded-2xl box-glow-crimson transition flex flex-col justify-between space-y-4 hover:-translate-y-1"
+          >
+            <div>
+              <span className="text-xs font-mono text-rose-400 font-bold block">03 // DIRECT INQUIRIES</span>
+              <h4 className="text-lg font-bold text-white mt-1">Email</h4>
+              <p className="text-xs text-slate-400 mt-1 break-all">sukantxplodeprime@gmail.com</p>
+            </div>
+            <span className="text-xs font-mono text-rose-400 flex items-center gap-1">
+              Send Email <ArrowRight className="w-3.5 h-3.5" />
+            </span>
+          </a>
+
+          <div className="bg-[#060c1d] border-2 border-amber-500/40 p-5 rounded-2xl box-glow-multi transition flex flex-col justify-between space-y-4">
+            <div>
+              <span className="text-xs font-mono text-amber-400 font-bold block">04 // MENTORSHIP</span>
+              <h4 className="text-lg font-bold text-white mt-1">Topmate 1:1</h4>
+              <p className="text-xs text-slate-400 mt-1">Architecture Reviews &amp; AI Guidance</p>
+            </div>
+            <span className="text-xs font-mono text-amber-400 flex items-center gap-1">
+              Available <ArrowRight className="w-3.5 h-3.5" />
+            </span>
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================================== */}
+      {/* SECTION 10: COMPLETE PLAYBOOK PACKAGE & EXPORTER */}
+      {/* ============================================================== */}
+      <section className="py-20 px-4 lg:px-8 max-w-5xl mx-auto border-t border-cyan-500/20 space-y-8">
+        <div className="bg-gradient-to-r from-[#071329] via-[#0b1736] to-[#12071f] border-2 border-cyan-400/50 rounded-3xl p-8 box-glow-multi flex flex-wrap items-center justify-between gap-6">
+          <div className="space-y-2">
+            <h3 className="text-2xl font-black text-white flex items-center gap-2">
+              <FolderArchive className="w-6 h-6 text-cyan-400" />
+              <span>Ready to Update Your GitHub Profile?</span>
+            </h3>
+            <p className="text-sm text-slate-300 max-w-xl">
+              Download the complete bundle containing <code className="text-cyan-400">README.md</code> and all 5 animated 3D SVGs + transparent character PNGs.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+            <a
+              href="/profile-assets.zip"
+              download="profile-assets.zip"
+              onClick={triggerConfetti}
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#00f5ff] to-[#ff0055] text-black font-black text-sm shadow-xl shadow-cyan-500/40 hover:scale-105 transition active:scale-95"
+            >
+              <Download className="w-4 h-4" />
+              <span>Download profile-assets.zip</span>
+            </a>
+
+            <button
+              onClick={copyReadme}
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 text-sm font-semibold transition"
+            >
+              <Copy className="w-4 h-4 text-cyan-400" />
+              <span>Copy Raw README</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Cyber Footer */}
+      <footer className="border-t border-slate-800/80 bg-[#02040a] py-10 px-4 text-center text-xs text-slate-500 space-y-3">
+        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+          <span className="font-mono text-slate-400 font-bold">
+            SUKANT CODES // THE PROFILE PLAYBOOK 3D UNIVERSE
+          </span>
+          <div className="flex items-center gap-4 text-slate-400 font-mono">
+            <span>#00f5ff • #ff0055 • #00ff9d</span>
+            <span>Self-Contained SVGs</span>
+            <span>Zero Network Calls</span>
+          </div>
+        </div>
+        <p className="text-[11px] text-slate-600">
+          Crafted with extreme kinetic vector physics &amp; multi-spectral neon glows for @sukantcodes.
+        </p>
       </footer>
     </div>
   );
-}
-
-function getViewPagerWrapperClass(viewport: 'desktop' | 'tablet' | 'mobile') {
-  if (viewport === 'mobile') return 'max-w-[375px]';
-  if (viewport === 'tablet') return 'max-w-[768px]';
-  return 'max-w-[920px]';
 }
