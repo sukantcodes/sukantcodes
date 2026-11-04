@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import confetti from 'canvas-confetti';
 import {
   Download,
@@ -34,25 +35,37 @@ import {
   ArrowRight,
   ChevronRight,
   Radio,
-  Share2,
   Lock,
   Flame,
   CheckCircle2,
   Sliders,
-  Globe
+  Globe,
+  SlidersHorizontal,
+  RefreshCw,
+  Sun,
+  Moon
 } from 'lucide-react';
 
 export default function App() {
-  // Navigation & UI States
+  // Navigation & Interactive States
   const [activeSection, setActiveSection] = useState('hero');
   const [viewport, setViewport] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
   const [bgTheme, setBgTheme] = useState<'navy' | 'checker' | 'github'>('navy');
   const [copied, setCopied] = useState(false);
   const [timelineSec, setTimelineSec] = useState<number | 'static'>(0);
   const [refreshKey, setRefreshKey] = useState(Date.now());
-  const [soundEnabled, setSoundEnabled] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
   const [idCardFlipped, setIdCardFlipped] = useState(false);
   const [laserActive, setLaserActive] = useState(true);
+
+  // Dynamic Island State (Apple iOS 18 / VisionOS Morphing Pill)
+  const [islandState, setIslandState] = useState<'idle' | 'expanded' | 'jarvis' | 'download'>('idle');
+  const [islandMessage, setIslandMessage] = useState('Sukant OS // System 3D Online');
+
+  // iPhone Simulator Active Screen (0: JARVIS Voice Assistant, 1: MovieBox, 2: 3D Dev Pass)
+  const [phoneScreen, setPhoneScreen] = useState<0 | 1 | 2>(0);
+  const [phonePlaying, setPhonePlaying] = useState(false);
+  const [phoneProgress, setPhoneProgress] = useState(38);
 
   // 3D Parallax Tilt state for Hero
   const [heroTilt, setHeroTilt] = useState({ x: 0, y: 0 });
@@ -60,8 +73,9 @@ export default function App() {
   // Terminal State
   const [terminalInput, setTerminalInput] = useState('');
   const [terminalLogs, setTerminalLogs] = useState<string[]>([
-    "SUKANT OS // v2026.11 [3D CYBERNETIC KERNEL]",
-    "System status: 🟢 ALL 5 PLAYBOOK SVGs ONLINE & VERIFIED",
+    "SUKANT OS // v2026.11 [3D VISIONOS KERNEL]",
+    "Acoustics: 🟢 HAPTIC AUDIO SYNTH ACTIVE",
+    "Physics: 🟢 120HZ LIQUID SPRING TRANSFORMS",
     "Type 'help' to inspect available system commands."
   ]);
 
@@ -70,10 +84,13 @@ export default function App() {
   const [jarvisLog, setJarvisLog] = useState("Standing by. Say or select a command below...");
   const [jarvisQuery, setJarvisQuery] = useState('');
 
-  // Audio Context for Cyber Synth Sound Effects
+  // Audio Context for Apple-Grade Cyber Acoustic Feedback
   const audioCtxRef = useRef<AudioContext | null>(null);
 
-  const playSynthBeep = (freq = 440, type: OscillatorType = 'sine', duration = 0.12) => {
+  // Starfield Canvas Ref
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  const playHapticSound = (type: 'pop' | 'glass' | 'chime' | 'laser' = 'pop') => {
     if (!soundEnabled) return;
     try {
       if (!audioCtxRef.current) {
@@ -81,16 +98,53 @@ export default function App() {
       }
       const ctx = audioCtxRef.current;
       if (ctx.state === 'suspended') ctx.resume();
+
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-      osc.type = type;
-      osc.frequency.setValueAtTime(freq, ctx.currentTime);
-      gain.gain.setValueAtTime(0.08, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + duration);
+      const now = ctx.currentTime;
+
+      if (type === 'pop') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(320, now);
+        osc.frequency.exponentialRampToValueAtTime(140, now + 0.08);
+        gain.gain.setValueAtTime(0.08, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(now + 0.08);
+      } else if (type === 'glass') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(840, now);
+        osc.frequency.exponentialRampToValueAtTime(1240, now + 0.12);
+        gain.gain.setValueAtTime(0.06, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(now + 0.14);
+      } else if (type === 'chime') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(523.25, now); // C5
+        osc.frequency.setValueAtTime(659.25, now + 0.06); // E5
+        osc.frequency.setValueAtTime(783.99, now + 0.12); // G5
+        gain.gain.setValueAtTime(0.07, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(now + 0.3);
+      } else if (type === 'laser') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(1200, now);
+        osc.frequency.exponentialRampToValueAtTime(200, now + 0.15);
+        gain.gain.setValueAtTime(0.05, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(now + 0.15);
+      }
     } catch {
       // Audio not permitted yet
     }
@@ -98,12 +152,15 @@ export default function App() {
 
   const triggerConfetti = () => {
     confetti({
-      particleCount: 80,
-      spread: 70,
+      particleCount: 100,
+      spread: 80,
       origin: { y: 0.6 },
-      colors: ['#00f5ff', '#ff0055', '#a855f7', '#00ff9d', '#ffaa00']
+      colors: ['#00f5ff', '#ff2d55', '#a855f7', '#34c759', '#ffcc00']
     });
-    playSynthBeep(880, 'triangle', 0.25);
+    playHapticSound('chime');
+    setIslandState('download');
+    setIslandMessage('📦 Package profile-assets.zip Ready');
+    setTimeout(() => setIslandState('idle'), 3500);
   };
 
   const copyReadme = () => {
@@ -161,11 +218,99 @@ export default function App() {
 
 </div>`;
 
+  // Interactive Particle Starfield Canvas (VisionOS Fluid Physics)
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let animationFrameId: number;
+    let width = (canvas.width = window.innerWidth);
+    let height = (canvas.height = window.innerHeight);
+
+    const handleResize = () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    };
+    window.addEventListener('resize', handleResize);
+
+    const particles: Array<{
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      radius: number;
+      color: string;
+      alpha: number;
+    }> = [];
+
+    const colors = ['#00f5ff', '#ff2d55', '#a855f7', '#34c759'];
+    for (let i = 0; i < 90; i++) {
+      particles.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        vx: (Math.random() - 0.5) * 0.45,
+        vy: (Math.random() - 0.5) * 0.45,
+        radius: Math.random() * 2 + 0.8,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        alpha: Math.random() * 0.5 + 0.3
+      });
+    }
+
+    const render = () => {
+      ctx.clearRect(0, 0, width, height);
+
+      // Render connected lines
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 110) {
+            ctx.strokeStyle = `rgba(0, 245, 255, ${0.12 * (1 - dist / 110)})`;
+            ctx.lineWidth = 0.8;
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.stroke();
+          }
+        }
+      }
+
+      // Render and update particles
+      particles.forEach((p) => {
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x < 0) p.x = width;
+        if (p.x > width) p.x = 0;
+        if (p.y < 0) p.y = height;
+        if (p.y > height) p.y = 0;
+
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = p.alpha;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      ctx.globalAlpha = 1;
+      animationFrameId = requestAnimationFrame(render);
+    };
+
+    render();
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
+
   // Hero Mouse Parallax Tracker
   const handleHeroMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width - 0.5) * 24;
-    const y = ((e.clientY - rect.top) / rect.height - 0.5) * -24;
+    const x = ((e.clientX - rect.left) / rect.width - 0.5) * 28;
+    const y = ((e.clientY - rect.top) / rect.height - 0.5) * -28;
     setHeroTilt({ x, y });
   };
 
@@ -178,14 +323,14 @@ export default function App() {
     e.preventDefault();
     const cmd = terminalInput.trim().toLowerCase();
     if (!cmd) return;
-    playSynthBeep(620, 'square', 0.08);
+    playHapticSound('pop');
 
     const newLogs = [...terminalLogs, `> ${terminalInput}`];
     switch (cmd) {
       case 'help':
         newLogs.push(
           "Available commands:",
-          "  help       - Show this command reference",
+          "  help       - Show command list",
           "  skills     - View orbital tech stack breakdown",
           "  projects   - Show production repositories (JARVIS, MovieBox)",
           "  playbook   - Verify all 5 SVG vector cards",
@@ -255,50 +400,59 @@ export default function App() {
     setJarvisActive(true);
     setJarvisQuery(query);
     setJarvisLog("Processing speech stream & running neural tool call...");
-    playSynthBeep(520, 'sine', 0.15);
+    playHapticSound('laser');
+    setIslandState('jarvis');
+    setIslandMessage(`JARVIS: "${query}"`);
 
     setTimeout(() => {
       setJarvisLog(response);
       setJarvisActive(false);
-      playSynthBeep(780, 'sine', 0.2);
+      playHapticSound('glass');
+      setTimeout(() => setIslandState('idle'), 4000);
     }, 1100);
   };
 
   const navLinks = [
-    { id: 'hero', label: '01 / 3D Reactor' },
-    { id: 'profile-suite', label: '02 / GitHub Playbook' },
-    { id: 'galaxy', label: '03 / 3D Orbit Galaxy' },
-    { id: 'projects', label: '04 / Repositories' },
-    { id: 'lanyard', label: '05 / 3D Pass ID' },
-    { id: 'photos', label: '06 / Real Photos' },
-    { id: 'roadmap', label: '07 / 3D Roadmap' },
-    { id: 'terminal', label: '08 / Cyber Console' },
-    { id: 'connect', label: '09 / Transmission' }
+    { id: 'hero', label: '01 / Spatial Reactor' },
+    { id: 'phone-sim', label: '02 / iPhone 16 Pro' },
+    { id: 'profile-suite', label: '03 / Playbook 5-Cards' },
+    { id: 'galaxy', label: '04 / Skills Matrix' },
+    { id: 'projects', label: '05 / Repositories' },
+    { id: 'lanyard', label: '06 / 3D Dev Pass' },
+    { id: 'photos', label: '07 / Real Photos' },
+    { id: 'roadmap', label: '08 / Roadmap' },
+    { id: 'terminal', label: '09 / Cyber Shell' },
+    { id: 'connect', label: '10 / Transmission' }
   ];
 
   return (
-    <div className="min-h-screen bg-[#030611] text-slate-100 selection:bg-[#00f5ff] selection:text-black relative overflow-x-hidden">
-      {/* Background 3D Ambient Glowing Nebulae */}
+    <div className="min-h-screen bg-[#030611] text-slate-100 selection:bg-[#00f5ff] selection:text-black relative overflow-x-hidden font-sans">
+      {/* VisionOS Fluid Starfield Particle Canvas */}
+      <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-0" />
+
+      {/* Ambient Glowing Nebulae */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        {/* Top Cyan Orb */}
-        <div className="absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full bg-gradient-to-tr from-[#00f5ff]/20 via-[#0080ff]/10 to-transparent blur-[140px] animate-pulse-glow" />
-        {/* Center Magenta Orb */}
+        <div className="absolute -top-40 -left-40 w-[650px] h-[650px] rounded-full bg-gradient-to-tr from-[#00f5ff]/20 via-[#0080ff]/10 to-transparent blur-[150px] animate-pulse-glow" />
         <div className="absolute top-[35%] -right-40 w-[700px] h-[700px] rounded-full bg-gradient-to-bl from-[#ff0055]/20 via-[#a855f7]/15 to-transparent blur-[160px] animate-pulse-glow" style={{ animationDelay: '2s' }} />
-        {/* Bottom Emerald Orb */}
-        <div className="absolute bottom-[10%] left-[20%] w-[550px] h-[550px] rounded-full bg-gradient-to-tr from-[#00ff9d]/15 via-[#00f5ff]/10 to-transparent blur-[140px] animate-pulse-glow" style={{ animationDelay: '4s' }} />
-        {/* Subtle Scanline Overlay */}
-        <div className="absolute inset-0 scanlines opacity-40" />
+        <div className="absolute bottom-[10%] left-[20%] w-[600px] h-[600px] rounded-full bg-gradient-to-tr from-[#00ff9d]/15 via-[#00f5ff]/10 to-transparent blur-[150px] animate-pulse-glow" style={{ animationDelay: '4s' }} />
       </div>
 
-      {/* Top Floating Cyber HUD Bar */}
-      <header className="sticky top-0 z-50 px-4 lg:px-8 py-3 bg-[#040817]/85 backdrop-blur-md border-b border-cyan-500/20 box-glow-cyan">
+      {/* ============================================================== */}
+      {/* APPLE DYNAMIC ISLAND & SPATIAL HUD (TOP BAR) */}
+      {/* ============================================================== */}
+      <header className="sticky top-0 z-50 px-4 lg:px-8 py-3 bg-[#040817]/75 backdrop-blur-2xl border-b border-white/10 shadow-2xl">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+          {/* Logo & Identity */}
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#00f5ff] via-[#a855f7] to-[#ff0055] p-[2px] shadow-lg shadow-cyan-500/30">
-              <div className="w-full h-full bg-[#040817] rounded-[10px] flex items-center justify-center font-black text-sm text-[#00f5ff] tracking-wider">
-                3D
+            <motion.div
+              whileHover={{ scale: 1.1, rotate: 5 }}
+              whileTap={{ scale: 0.95 }}
+              className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#00f5ff] via-[#a855f7] to-[#ff2d55] p-[2px] shadow-lg shadow-cyan-500/25 cursor-pointer"
+            >
+              <div className="w-full h-full bg-[#040817] rounded-[14px] flex items-center justify-center font-black text-sm text-[#00f5ff]">
+                SC
               </div>
-            </div>
+            </motion.div>
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-extrabold text-base tracking-tight text-white neon-glow-cyan">
@@ -307,25 +461,43 @@ export default function App() {
                 <span className="text-xs px-2 py-0.5 rounded-full font-mono bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
                   @sukantcodes
                 </span>
-                <span className="inline-flex items-center gap-1.5 text-[11px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                  Active Nov 2026
-                </span>
               </div>
               <p className="text-[11px] font-mono text-slate-400 hidden sm:block">
-                Long-Form 3D Cybernetic Portfolio • Native SMIL + Vector Universe
+                iPhone-Grade Liquid Spring Physics • 3D Cyber Vision
               </p>
             </div>
           </div>
 
-          <div className="flex items-center flex-wrap gap-2.5">
+          {/* DYNAMIC ISLAND (EXPANDS WITH SPRING PHYSICS) */}
+          <motion.div
+            layout
+            transition={{ type: 'spring', stiffness: 450, damping: 30 }}
+            onClick={() => {
+              setIslandState(islandState === 'idle' ? 'expanded' : 'idle');
+              playHapticSound('pop');
+            }}
+            className="cursor-pointer bg-black/90 border border-white/20 rounded-full px-4 py-1.5 shadow-2xl flex items-center gap-3 hover:border-cyan-400/50 transition-colors"
+          >
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-xs font-mono text-slate-200">
+              {islandState === 'jarvis' ? islandMessage : islandState === 'download' ? islandMessage : 'Sukant OS // Dynamic Island'}
+            </span>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-800 text-cyan-400">
+              120 FPS
+            </span>
+          </motion.div>
+
+          {/* Action Bar */}
+          <div className="flex items-center flex-wrap gap-2">
             {/* Audio Synth Toggle */}
-            <button
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => {
                 setSoundEnabled(!soundEnabled);
-                playSynthBeep(580, 'sine', 0.15);
+                playHapticSound('glass');
               }}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-mono transition ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-mono transition ${
                 soundEnabled
                   ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300'
                   : 'bg-slate-900 border-slate-700 text-slate-400 hover:text-slate-200'
@@ -334,24 +506,28 @@ export default function App() {
             >
               {soundEnabled ? <Volume2 className="w-3.5 h-3.5 text-cyan-400" /> : <VolumeX className="w-3.5 h-3.5" />}
               <span>{soundEnabled ? 'FX: ON' : 'FX: OFF'}</span>
-            </button>
+            </motion.button>
 
-            {/* Standalone preview.html link */}
-            <a
+            {/* Standalone preview.html */}
+            <motion.a
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               href="/preview.html"
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 transition"
+              className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 transition"
             >
               <Eye className="w-3.5 h-3.5 text-cyan-400" />
               <span>preview.html</span>
               <ExternalLink className="w-3 h-3 text-slate-400" />
-            </a>
+            </motion.a>
 
             {/* Copy README */}
-            <button
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={copyReadme}
-              className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 transition active:scale-95"
+              className="inline-flex items-center gap-1.5 text-xs font-medium px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 transition"
             >
               {copied ? (
                 <>
@@ -364,45 +540,49 @@ export default function App() {
                   <span>Copy README.md</span>
                 </>
               )}
-            </button>
+            </motion.button>
 
             {/* Download Complete ZIP Package */}
-            <a
+            <motion.a
+              whileHover={{ scale: 1.06 }}
+              whileTap={{ scale: 0.94 }}
               href="/profile-assets.zip"
               download="profile-assets.zip"
               onClick={triggerConfetti}
-              className="inline-flex items-center gap-2 text-xs font-bold px-4 py-1.5 rounded-lg bg-gradient-to-r from-[#00f5ff] via-[#0080ff] to-[#ff0055] hover:opacity-90 text-black shadow-lg shadow-cyan-500/30 transition active:scale-95"
+              className="inline-flex items-center gap-2 text-xs font-bold px-4 py-1.5 rounded-xl bg-gradient-to-r from-[#00f5ff] via-[#0080ff] to-[#ff2d55] text-black shadow-lg shadow-cyan-500/30 transition"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Download ZIP (1.36 MB)</span>
-            </a>
+            </motion.a>
           </div>
         </div>
 
-        {/* Section Fast-Scroll Ribbon */}
-        <div className="max-w-7xl mx-auto mt-2.5 pt-2 border-t border-slate-800/60 flex items-center gap-2 overflow-x-auto no-scrollbar">
+        {/* Liquid Horizontal Navigation Bar */}
+        <div className="max-w-7xl mx-auto mt-2.5 pt-2 border-t border-white/5 flex items-center gap-2 overflow-x-auto no-scrollbar">
           {navLinks.map((item) => (
-            <a
+            <motion.a
               key={item.id}
               href={`#${item.id}`}
+              whileHover={{ scale: 1.06 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => {
                 setActiveSection(item.id);
-                playSynthBeep(480, 'sine', 0.05);
+                playHapticSound('pop');
               }}
-              className={`text-[11px] font-mono whitespace-nowrap px-3 py-1 rounded-md transition ${
+              className={`text-[11px] font-mono whitespace-nowrap px-3.5 py-1 rounded-full transition ${
                 activeSection === item.id
                   ? 'bg-cyan-500/20 text-[#00f5ff] border border-cyan-500/40 font-bold'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
+                  : 'text-slate-400 hover:text-white hover:bg-white/5'
               }`}
             >
               {item.label}
-            </a>
+            </motion.a>
           ))}
         </div>
       </header>
 
       {/* ============================================================== */}
-      {/* SECTION 1: EPIC 3D CYBER REACTOR HERO (MOUSE PARALLAX TILT) */}
+      {/* SECTION 1: SPATIAL HERO WITH 3D GLASS CHASSIS & GYRO RINGS */}
       {/* ============================================================== */}
       <section
         id="hero"
@@ -410,27 +590,20 @@ export default function App() {
         onMouseMove={handleHeroMouseMove}
         onMouseLeave={handleHeroMouseLeave}
       >
-        {/* Animated 3D Cyber Floor */}
-        <div className="absolute bottom-0 left-0 right-0 h-96 cyber-grid-floor opacity-30 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 right-0 h-96 cyber-grid-floor opacity-35 pointer-events-none" />
 
-        <div
-          className="max-w-6xl w-full mx-auto relative z-10 transition-transform duration-200 ease-out preserve-3d"
-          style={{
-            transform: `rotateX(${heroTilt.y}deg) rotateY(${heroTilt.x}deg)`
+        <motion.div
+          className="max-w-6xl w-full mx-auto relative z-10 preserve-3d"
+          animate={{
+            rotateX: heroTilt.y,
+            rotateY: heroTilt.x
           }}
+          transition={{ type: 'spring', stiffness: 300, damping: 25 }}
         >
-          {/* Main Hero Card Chassis */}
-          <div className="bg-[#050b1d]/80 backdrop-blur-xl border-2 border-cyan-500/40 rounded-3xl p-6 sm:p-12 box-glow-multi relative overflow-hidden">
-            {/* Corner Tech Brackets */}
-            <div className="absolute top-3 left-3 w-6 h-6 border-t-2 border-l-2 border-[#00f5ff]" />
-            <div className="absolute top-3 right-3 w-6 h-6 border-t-2 border-r-2 border-[#ff0055]" />
-            <div className="absolute bottom-3 left-3 w-6 h-6 border-b-2 border-l-2 border-[#ff0055]" />
-            <div className="absolute bottom-3 right-3 w-6 h-6 border-b-2 border-r-2 border-[#00f5ff]" />
-
+          <div className="glass-panel rounded-3xl p-6 sm:p-12 relative overflow-hidden box-glow-multi">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
               {/* Left Column: 3D Typography */}
               <div className="lg:col-span-7 space-y-6">
-                {/* Tech Status Pill */}
                 <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-900/90 border border-cyan-500/50 box-glow-cyan">
                   <span className="w-2 h-2 rounded-full bg-[#00ff9d] animate-ping" />
                   <span className="text-xs font-mono text-[#00f5ff] font-bold">
@@ -438,11 +611,10 @@ export default function App() {
                   </span>
                 </div>
 
-                {/* Extruded 3D Title */}
                 <div>
                   <h1 className="text-4xl sm:text-6xl font-black tracking-tight leading-none">
                     <span className="block text-slate-200 drop-shadow-md">SUKANT</span>
-                    <span className="block bg-gradient-to-r from-[#00f5ff] via-[#ffffff] to-[#ff0055] bg-clip-text text-transparent neon-glow-cyan animate-pulse">
+                    <span className="block bg-gradient-to-r from-[#00f5ff] via-[#ffffff] to-[#ff2d55] bg-clip-text text-transparent neon-glow-cyan">
                       BHATTACHARYA
                     </span>
                   </h1>
@@ -451,7 +623,6 @@ export default function App() {
                   </p>
                 </div>
 
-                {/* Mission Statement */}
                 <p className="text-base sm:text-lg text-slate-300 font-normal leading-relaxed">
                   Architecting <strong className="text-cyan-300 font-semibold">autonomous AI voice assistants</strong>, high-performance media engines, and reactive Android apps built with{' '}
                   <strong className="text-purple-400 font-semibold">Kotlin</strong>, <strong className="text-emerald-400 font-semibold">Jetpack Compose</strong>, and neural tool-calling models.
@@ -477,48 +648,45 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* CTA Buttons */}
                 <div className="flex flex-wrap items-center gap-4 pt-2">
-                  <a
-                    href="#profile-suite"
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#00f5ff] to-[#0080ff] text-black font-extrabold text-sm shadow-xl shadow-cyan-500/30 hover:scale-105 transition"
+                  <motion.a
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    href="#phone-sim"
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-r from-[#00f5ff] to-[#0080ff] text-black font-extrabold text-sm shadow-xl shadow-cyan-500/30 transition"
                   >
-                    <Sparkles className="w-4 h-4 text-black" />
-                    <span>Explore 3D Playbook SVGs</span>
-                  </a>
+                    <Smartphone className="w-4 h-4 text-black" />
+                    <span>Interact With iPhone 16 Pro</span>
+                  </motion.a>
 
-                  <a
-                    href="#projects"
-                    className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-200 border border-slate-700 text-sm font-semibold transition"
+                  <motion.a
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    href="#profile-suite"
+                    className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-slate-900/90 hover:bg-slate-800 text-slate-200 border border-slate-700 text-sm font-semibold transition"
                   >
-                    <Cpu className="w-4 h-4 text-rose-400" />
-                    <span>Inspect Repositories</span>
-                  </a>
+                    <Boxes className="w-4 h-4 text-rose-400" />
+                    <span>View 5-Card Playbook Suite</span>
+                  </motion.a>
                 </div>
               </div>
 
               {/* Right Column: 3D Holographic Character & Gyro Rings */}
               <div className="lg:col-span-5 flex justify-center">
                 <div className="relative w-72 h-72 sm:w-80 sm:h-80 flex items-center justify-center animate-float-smooth">
-                  {/* Outer Gyro Ring Cyan */}
                   <div className="absolute inset-0 rounded-full border-2 border-dashed border-cyan-400/60 animate-spin" style={{ animationDuration: '18s' }} />
-                  {/* Middle Gyro Ring Crimson */}
                   <div className="absolute inset-3 rounded-full border-2 border-dashed border-rose-500/70 animate-spin" style={{ animationDuration: '24s', animationDirection: 'reverse' }} />
-                  {/* Inner Gyro Ring Violet */}
                   <div className="absolute inset-7 rounded-full border border-purple-400/50 animate-spin" style={{ animationDuration: '32s' }} />
 
-                  {/* 3D Glass Chassis */}
                   <div className="relative w-60 h-60 rounded-3xl bg-[#081024] p-3 border-2 border-cyan-400/50 box-glow-multi overflow-hidden">
                     <img
                       src="/assets/id.png"
                       alt="Sukant Bhattacharya Stylized 3D Portrait"
                       className="w-full h-full object-cover rounded-2xl"
                     />
-                    {/* Rainbow Holographic Light Sweep */}
                     <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent pointer-events-none" />
                   </div>
 
-                  {/* Orbiting Badge */}
                   <div className="absolute -bottom-3 bg-[#040817] border border-cyan-400 px-4 py-1.5 rounded-full text-xs font-mono font-bold text-white shadow-lg flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                     <span>SUKANT // 3D-VERIFIED</span>
@@ -527,14 +695,210 @@ export default function App() {
               </div>
             </div>
           </div>
+        </motion.div>
+      </section>
+
+      {/* ============================================================== */}
+      {/* SECTION 2: 3D INTERACTIVE IPHONE 16 PRO SIMULATOR */}
+      {/* ============================================================== */}
+      <section id="phone-sim" className="py-24 px-4 lg:px-8 max-w-7xl mx-auto space-y-12 relative">
+        <div className="text-center space-y-3">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-xs font-mono text-cyan-400 font-bold">
+            <Smartphone className="w-3.5 h-3.5" />
+            <span>IPHONE 16 PRO // 120HZ LIQUID MOTION SIMULATOR</span>
+          </div>
+          <h2 className="text-3xl sm:text-5xl font-black text-white neon-glow-cyan">
+            Interactive Hardware Device
+          </h2>
+          <p className="text-sm text-slate-400 max-w-2xl mx-auto">
+            Experience Sukant's applications inside a realistic titanium iPhone frame with Apple-Intelligence edge lighting and interactive screens.
+          </p>
+        </div>
+
+        {/* 3 App Selector Tabs */}
+        <div className="flex justify-center gap-3">
+          {[
+            { id: 0, label: 'The Ultimate JARVIS (Voice AI)' },
+            { id: 1, label: 'MovieBox (Compose Streaming)' },
+            { id: 2, label: '3D Developer Pass (Lanyard)' }
+          ].map((tab) => (
+            <motion.button
+              key={tab.id}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => {
+                setPhoneScreen(tab.id as 0 | 1 | 2);
+                playHapticSound('pop');
+              }}
+              className={`px-4 py-2 rounded-2xl text-xs font-mono font-bold border transition ${
+                phoneScreen === tab.id
+                  ? 'bg-cyan-500 text-black border-cyan-400 shadow-lg shadow-cyan-500/25'
+                  : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
+              }`}
+            >
+              {tab.label}
+            </motion.button>
+          ))}
+        </div>
+
+        {/* 3D iPhone Frame Container */}
+        <div className="flex justify-center perspective-1000">
+          <motion.div
+            className="relative w-[340px] h-[680px] rounded-[52px] bg-[#0c1222] p-3 shadow-2xl border-4 border-slate-500/40 box-glow-multi"
+            whileHover={{ scale: 1.02, rotateY: 3 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+          >
+            {/* Apple Intelligence Glowing Perimeter Aura (Active on JARVIS screen) */}
+            {phoneScreen === 0 && (
+              <div className="absolute inset-0 rounded-[52px] apple-intelligence-glow pointer-events-none" />
+            )}
+
+            {/* Inner Screen Chassis */}
+            <div className="relative w-full h-full rounded-[44px] bg-[#040816] overflow-hidden flex flex-col justify-between border border-white/10">
+              {/* Dynamic Island Pill at Top */}
+              <div className="absolute top-2.5 left-1/2 -translate-x-1/2 w-28 h-7 bg-black rounded-full z-30 flex items-center justify-between px-2.5 border border-white/10 shadow-md">
+                <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse" />
+                <span className="text-[10px] font-mono text-slate-300">
+                  {phoneScreen === 0 ? 'JARVIS' : phoneScreen === 1 ? 'MOVIEBOX' : 'DEV-PASS'}
+                </span>
+                <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
+              </div>
+
+              {/* Status Bar */}
+              <div className="pt-3 px-6 flex justify-between items-center text-[10px] font-mono text-slate-400 z-20">
+                <span>9:41</span>
+                <span>5G • 100%</span>
+              </div>
+
+              {/* SCREEN CONTENT */}
+              <div className="flex-1 p-5 pt-8 overflow-y-auto no-scrollbar space-y-4">
+                {/* SCREEN 0: THE ULTIMATE JARVIS */}
+                {phoneScreen === 0 && (
+                  <div className="space-y-4">
+                    <div className="text-center pt-2">
+                      <span className="text-[10px] font-mono text-cyan-400 font-bold uppercase">AUTONOMOUS ASSISTANT</span>
+                      <h4 className="text-lg font-black text-white">The Ultimate JARVIS</h4>
+                      <p className="text-[11px] text-slate-400">Kotlin • Gemini API • Android SDK</p>
+                    </div>
+
+                    {/* Speech Waveform Orb */}
+                    <div className="w-32 h-32 mx-auto rounded-full bg-gradient-to-tr from-cyan-500/20 via-purple-500/20 to-rose-500/20 border-2 border-cyan-400/60 flex items-center justify-center relative overflow-hidden box-glow-cyan animate-pulse">
+                      <Mic className="w-10 h-10 text-cyan-400" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-cyan-500/20 to-transparent" />
+                    </div>
+
+                    <div className="bg-[#08122a] p-3 rounded-2xl border border-cyan-500/30 text-[11px] font-mono text-slate-300">
+                      <div className="text-cyan-400 font-bold mb-1">&gt; STATUS: LISTENING (120Hz)</div>
+                      <div>{jarvisLog}</div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] font-mono text-slate-400 block">Tap Voice Commands:</span>
+                      <button
+                        onClick={() =>
+                          runJarvisCommand(
+                            "Jarvis, run full Android memory garbage collection",
+                            "Memory GC complete: 41MB recovered. Latency under 12ms."
+                          )
+                        }
+                        className="w-full text-left p-2 rounded-xl bg-slate-900 border border-slate-800 text-[11px] text-slate-200 hover:border-cyan-400 transition"
+                      >
+                        ⚡ Optimize Memory &amp; Cache
+                      </button>
+                      <button
+                        onClick={() =>
+                          runJarvisCommand(
+                            "Jarvis, trigger Gemini agent reasoning loop",
+                            "Gemini 2.5 SDK reasoning stream initialized. Ready for query."
+                          )
+                        }
+                        className="w-full text-left p-2 rounded-xl bg-slate-900 border border-slate-800 text-[11px] text-slate-200 hover:border-rose-400 transition"
+                      >
+                        🧠 Trigger Gemini Neural Agent
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* SCREEN 1: MOVIEBOX */}
+                {phoneScreen === 1 && (
+                  <div className="space-y-4">
+                    <div className="text-center pt-2">
+                      <span className="text-[10px] font-mono text-rose-400 font-bold uppercase">MEDIA CLIENT</span>
+                      <h4 className="text-lg font-black text-white">MovieBox Streaming</h4>
+                      <p className="text-[11px] text-slate-400">Jetpack Compose • ExoPlayer</p>
+                    </div>
+
+                    <div className="h-40 rounded-2xl bg-gradient-to-tr from-rose-950/60 via-purple-950/40 to-slate-900 border border-rose-500/40 relative overflow-hidden flex items-center justify-center">
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => {
+                          setPhonePlaying(!phonePlaying);
+                          playHapticSound('pop');
+                        }}
+                        className="w-12 h-12 rounded-full bg-rose-600/90 text-white flex items-center justify-center shadow-lg"
+                      >
+                        {phonePlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-0.5" />}
+                      </motion.button>
+                      <div className="absolute bottom-2 left-3 right-3 flex items-center gap-2">
+                        <span className="text-[10px] font-mono text-slate-300">01:45</span>
+                        <div className="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                          <div className="h-full bg-rose-500" style={{ width: `${phoneProgress}%` }} />
+                        </div>
+                        <span className="text-[10px] font-mono text-slate-300">04:20</span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="bg-[#0b1428] p-2.5 rounded-xl border border-slate-800">
+                        <span className="text-[10px] font-mono text-rose-400 font-bold block">120Hz UI</span>
+                        <span className="text-[10px] text-slate-400">Compose Gestures</span>
+                      </div>
+                      <div className="bg-[#0b1428] p-2.5 rounded-xl border border-slate-800">
+                        <span className="text-[10px] font-mono text-cyan-400 font-bold block">Offline</span>
+                        <span className="text-[10px] text-slate-400">Room Video Cache</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* SCREEN 2: 3D DEV PASS */}
+                {phoneScreen === 2 && (
+                  <div className="space-y-4 text-center">
+                    <div className="pt-2">
+                      <span className="text-[10px] font-mono text-emerald-400 font-bold uppercase">DEVELOPER PASS</span>
+                      <h4 className="text-lg font-black text-white">Sukant Bhattacharya</h4>
+                      <p className="text-[11px] font-mono text-cyan-400">@sukantcodes</p>
+                    </div>
+
+                    <div className="w-32 h-32 mx-auto rounded-2xl overflow-hidden border-2 border-cyan-400/60 shadow-xl bg-[#081024]">
+                      <img src="/assets/id.png" alt="Sukant" className="w-full h-full object-cover" />
+                    </div>
+
+                    <div className="bg-[#08122a] p-3 rounded-2xl border border-slate-800 text-[11px] font-mono text-slate-300 text-left space-y-1">
+                      <div>ROLE: <span className="text-cyan-400 font-bold">Android &amp; Voice AI Architect</span></div>
+                      <div>EMAIL: <span className="text-rose-400 font-bold">sukantxplodeprime@gmail.com</span></div>
+                      <div>STATUS: <span className="text-emerald-400 font-bold">● VERIFIED</span></div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Bottom Home Indicator Bar */}
+              <div className="pb-2 flex justify-center">
+                <div className="w-32 h-1 bg-white/40 rounded-full" />
+              </div>
+            </div>
+          </motion.div>
         </div>
       </section>
 
       {/* ============================================================== */}
-      {/* SECTION 2: GITHUB PROFILE PLAYBOOK SUITE (ALL 5 3D SVGS) */}
+      {/* SECTION 3: GITHUB PROFILE PLAYBOOK SUITE (5 VECTOR CARDS) */}
       {/* ============================================================== */}
-      <section id="profile-suite" className="py-20 px-4 lg:px-8 max-w-7xl mx-auto space-y-8 relative">
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-cyan-500/20 pb-5">
+      <section id="profile-suite" className="py-24 px-4 lg:px-8 max-w-7xl mx-auto space-y-8 relative">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-5">
           <div>
             <div className="inline-flex items-center gap-2 text-xs font-mono text-[#00f5ff] font-bold">
               <Boxes className="w-4 h-4" />
@@ -544,17 +908,15 @@ export default function App() {
               Animated GitHub README Components
             </h2>
             <p className="text-sm text-slate-400 mt-1 max-w-2xl">
-              All 5 self-contained animated vector files required by the uploaded Playbook. Each card is rendered with 3D perspective depth, glowing neon gradients, and zero external network requests.
+              All 5 self-contained animated vector files required by the uploaded Playbook. Rendered with 3D perspective depth, glowing neon gradients, and zero external requests.
             </p>
           </div>
 
-          {/* Controls Bar */}
           <div className="flex items-center flex-wrap gap-2.5">
-            {/* Viewport Width Selector */}
-            <div className="flex bg-slate-900 rounded-lg p-1 border border-slate-800">
+            <div className="flex bg-slate-900 rounded-xl p-1 border border-slate-800">
               <button
                 onClick={() => setViewport('desktop')}
-                className={`px-3 py-1 text-xs rounded-md font-medium transition ${
+                className={`px-3 py-1 text-xs rounded-lg font-medium transition ${
                   viewport === 'desktop' ? 'bg-[#00f5ff] text-black font-bold' : 'text-slate-400 hover:text-white'
                 }`}
               >
@@ -562,7 +924,7 @@ export default function App() {
               </button>
               <button
                 onClick={() => setViewport('tablet')}
-                className={`px-3 py-1 text-xs rounded-md font-medium transition ${
+                className={`px-3 py-1 text-xs rounded-lg font-medium transition ${
                   viewport === 'tablet' ? 'bg-[#00f5ff] text-black font-bold' : 'text-slate-400 hover:text-white'
                 }`}
               >
@@ -570,7 +932,7 @@ export default function App() {
               </button>
               <button
                 onClick={() => setViewport('mobile')}
-                className={`px-3 py-1 text-xs rounded-md font-medium transition ${
+                className={`px-3 py-1 text-xs rounded-lg font-medium transition ${
                   viewport === 'mobile' ? 'bg-[#00f5ff] text-black font-bold' : 'text-slate-400 hover:text-white'
                 }`}
               >
@@ -578,79 +940,18 @@ export default function App() {
               </button>
             </div>
 
-            {/* Background Theme Selector */}
-            <div className="flex bg-slate-900 rounded-lg p-1 border border-slate-800">
-              <button
-                onClick={() => setBgTheme('navy')}
-                className={`px-2.5 py-1 text-xs rounded-md transition ${
-                  bgTheme === 'navy' ? 'bg-cyan-500/20 text-cyan-300 font-bold' : 'text-slate-400'
-                }`}
-              >
-                Obsidian
-              </button>
-              <button
-                onClick={() => setBgTheme('github')}
-                className={`px-2.5 py-1 text-xs rounded-md transition ${
-                  bgTheme === 'github' ? 'bg-cyan-500/20 text-cyan-300 font-bold' : 'text-slate-400'
-                }`}
-              >
-                GitHub Dark
-              </button>
-              <button
-                onClick={() => setBgTheme('checker')}
-                className={`px-2.5 py-1 text-xs rounded-md transition ${
-                  bgTheme === 'checker' ? 'bg-cyan-500/20 text-cyan-300 font-bold' : 'text-slate-400'
-                }`}
-              >
-                Alpha Grid
-              </button>
-            </div>
-
-            {/* Restart SMIL Loop */}
-            <button
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => {
                 setRefreshKey(Date.now());
-                playSynthBeep(520, 'triangle', 0.1);
+                playHapticSound('pop');
               }}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-mono text-cyan-400 transition"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-mono text-cyan-400 transition"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span>Replay Loops</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Timeline Scrubber Bookmarks (Page 2 Playbook Requirement: 0s, 2s, 5s, 9s, 13s) */}
-        <div className="bg-[#070e22] border border-cyan-500/30 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2 text-xs font-mono text-slate-300">
-            <Clock className="w-4 h-4 text-cyan-400" />
-            <span className="font-bold">Playbook Timeline Verification:</span>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {[
-              { sec: 0, label: '0s: Initial Drop' },
-              { sec: 2, label: '2s: Settle & Reveal' },
-              { sec: 5, label: '5s: Role & Slide 2' },
-              { sec: 9, label: '9s: Slide 3 & Orbits' },
-              { sec: 13, label: '13s: Seamless Loop' },
-              { sec: 'static' as const, label: 'Static (Reduced Motion)' }
-            ].map((item) => (
-              <button
-                key={String(item.sec)}
-                onClick={() => {
-                  setTimelineSec(item.sec);
-                  setRefreshKey(Date.now());
-                  playSynthBeep(440 + (typeof item.sec === 'number' ? item.sec * 30 : 0), 'sine', 0.08);
-                }}
-                className={`px-3 py-1 text-xs font-mono rounded-lg border transition ${
-                  timelineSec === item.sec
-                    ? 'bg-[#00f5ff] text-black border-[#00f5ff] font-bold shadow-md shadow-cyan-500/20'
-                    : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
+            </motion.button>
           </div>
         </div>
 
@@ -693,13 +994,15 @@ export default function App() {
               accent: 'border-cyan-500/40'
             }
           ].map((item) => (
-            <div
+            <motion.div
               key={item.file}
-              className={`bg-[#060c1d] border-2 ${item.accent} rounded-3xl p-6 sm:p-8 space-y-4 box-glow-multi transition hover:scale-[1.008] duration-300`}
+              whileHover={{ y: -4, scale: 1.006 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+              className={`bg-[#060c1d] border-2 ${item.accent} rounded-3xl p-6 sm:p-8 space-y-4 box-glow-multi`}
             >
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-4">
                 <div className="flex items-center gap-3">
-                  <span className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#00f5ff] to-[#ff0055] text-black font-black text-sm flex items-center justify-center font-mono">
+                  <span className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#00f5ff] to-[#ff2d55] text-black font-black text-sm flex items-center justify-center font-mono">
                     {item.num}
                   </span>
                   <div>
@@ -712,19 +1015,20 @@ export default function App() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <a
+                  <motion.a
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     href={`/assets/${item.file}`}
                     download={item.file}
-                    onClick={() => playSynthBeep(640, 'triangle', 0.1)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-xs font-mono text-cyan-400 border border-cyan-500/30 transition"
+                    onClick={() => playHapticSound('glass')}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-xs font-mono text-cyan-400 border border-cyan-500/30 transition"
                   >
                     <Download className="w-3.5 h-3.5" />
                     <span>Download SVG</span>
-                  </a>
+                  </motion.a>
                 </div>
               </div>
 
-              {/* Responsive Container */}
               <div className="flex justify-center py-2">
                 <div
                   className={`w-full transition-all duration-300 ${
@@ -757,29 +1061,25 @@ export default function App() {
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </section>
 
       {/* ============================================================== */}
-      {/* SECTION 3: 3D INTERACTIVE SKILLS GALAXY */}
+      {/* SECTION 4: 3D INTERACTIVE SKILLS GALAXY */}
       {/* ============================================================== */}
       <section id="galaxy" className="py-24 px-4 lg:px-8 max-w-7xl mx-auto space-y-10 relative">
         <div className="text-center space-y-3">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-xs font-mono text-purple-400 font-bold">
             <Compass className="w-3.5 h-3.5" />
-            <span>INTERACTIVE SKILLS GALAXY &amp; KINETIC PROFICIENCY</span>
+            <span>INTERACTIVE SKILLS GALAXY</span>
           </div>
           <h2 className="text-3xl sm:text-5xl font-black text-white neon-glow-purple">
             Architectural Mastery &amp; Tech Stacks
           </h2>
-          <p className="text-sm text-slate-400 max-w-2xl mx-auto">
-            Deep-dive into the four core engineering domains that power Sukant's digital architecture.
-          </p>
         </div>
 
-        {/* 4 Deep Domain Interactive Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[
             {
@@ -811,228 +1111,102 @@ export default function App() {
               accent: 'border-emerald-500/40 text-emerald-400 bg-emerald-500/10'
             }
           ].map((item, idx) => (
-            <div
+            <motion.div
               key={idx}
-              className="bg-[#060c1d] border-2 border-slate-800 hover:border-cyan-400/60 rounded-3xl p-6 space-y-4 box-glow-multi transition-all duration-300 hover:-translate-y-2"
+              whileHover={{ y: -6, scale: 1.02 }}
+              transition={{ type: 'spring', stiffness: 350, damping: 25 }}
+              className="bg-[#060c1d] border-2 border-slate-800 hover:border-cyan-400/60 rounded-3xl p-6 space-y-4 box-glow-multi"
             >
               <div className={`inline-block px-2.5 py-1 rounded-lg text-xs font-mono font-bold border ${item.accent}`}>
                 {item.domain}
               </div>
               <h3 className="text-xl font-bold text-white">{item.title}</h3>
               <p className="text-xs text-slate-400 leading-relaxed">{item.desc}</p>
-
               <div className="pt-2 border-t border-slate-800/80">
                 <span className="text-[11px] font-mono text-slate-500 uppercase tracking-wider block mb-2">Technologies</span>
                 <div className="flex flex-wrap gap-1.5">
                   {item.techs.map((t) => (
                     <span
                       key={t}
-                      className="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-900 text-slate-300 border border-slate-800"
+                      className="text-[11px] font-mono px-2 py-0.5 rounded-md bg-slate-900 text-slate-300 border border-slate-800"
                     >
                       {t}
                     </span>
                   ))}
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </section>
 
       {/* ============================================================== */}
-      {/* SECTION 4: PRODUCTION REPOSITORIES & INTERACTIVE SIMULATORS */}
+      {/* SECTION 5: PRODUCTION REPOSITORIES */}
       {/* ============================================================== */}
       <section id="projects" className="py-24 px-4 lg:px-8 max-w-7xl mx-auto space-y-12 relative">
         <div className="text-center space-y-3">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-rose-500/10 border border-rose-500/30 text-xs font-mono text-rose-400 font-bold">
             <Cpu className="w-3.5 h-3.5" />
-            <span>PRODUCTION ARTIFACTS &amp; LIVE DEMOS</span>
+            <span>PRODUCTION ARTIFACTS</span>
           </div>
           <h2 className="text-3xl sm:text-5xl font-black text-white neon-glow-crimson">
-            Featured Repositories &amp; Hardware Engines
+            Featured Repositories &amp; Architectures
           </h2>
-          <p className="text-sm text-slate-400 max-w-2xl mx-auto">
-            Interact with live simulators of Sukant's key production applications.
-          </p>
         </div>
 
-        {/* Project 1: The Ultimate JARVIS Interactive Voice AI Console */}
-        <div className="bg-[#060c1d] border-2 border-cyan-500/40 rounded-3xl p-6 sm:p-10 box-glow-cyan space-y-6">
-          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center border border-cyan-400/40">
-                <Mic className="w-6 h-6 animate-pulse" />
-              </div>
-              <div>
-                <span className="text-xs font-mono text-cyan-400 font-bold uppercase">FEATURED REPO 01 // AUTONOMOUS VOICE AI</span>
-                <h3 className="text-2xl font-black text-white">The Ultimate JARVIS</h3>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <span className="px-3 py-1 rounded-full text-xs font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                ● Live Agent Console
-              </span>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* JARVIS Card */}
+          <div className="bg-[#060c1d] border-2 border-cyan-500/40 rounded-3xl p-6 sm:p-8 space-y-4 box-glow-cyan">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <span className="text-xs font-mono text-cyan-400 font-bold">REPO 01 // AUTONOMOUS AI</span>
               <a
                 href="https://github.com/sukantcodes"
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-black font-mono text-xs font-bold transition"
+                className="text-cyan-400 hover:underline text-xs font-mono flex items-center gap-1"
               >
-                <span>GitHub Repo</span>
-                <ExternalLink className="w-3 h-3" />
+                GitHub <ExternalLink className="w-3 h-3" />
               </a>
             </div>
-          </div>
-
-          <p className="text-sm text-slate-300 leading-relaxed max-w-3xl">
-            A native Android voice assistant powered by on-device voice activity detection, sub-second speech recognition, and the Gemini API for multi-turn autonomous device control and reasoning.
-          </p>
-
-          {/* Interactive Simulated Voice Agent Box */}
-          <div className="bg-[#030713] border border-cyan-500/30 rounded-2xl p-5 space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Radio className="w-4 h-4 text-cyan-400 animate-spin" />
-                <span className="text-xs font-mono text-slate-400">JARVIS NEURAL CORE // SPEECH PIPELINE</span>
-              </div>
-              <div className="flex items-center gap-1">
-                {[40, 70, 30, 90, 60, 80, 45, 95, 65, 35].map((h, i) => (
-                  <span
-                    key={i}
-                    className={`w-1 rounded-full bg-cyan-400 transition-all duration-300 ${
-                      jarvisActive ? 'animate-pulse' : 'opacity-40'
-                    }`}
-                    style={{ height: jarvisActive ? `${h}%` : '10px' }}
-                  />
-                ))}
-              </div>
-            </div>
-
-            {/* Simulated Query & Output Screen */}
-            <div className="bg-[#060a18] p-4 rounded-xl border border-slate-800 font-mono text-xs space-y-2">
-              {jarvisQuery && (
-                <div className="text-cyan-400">
-                  <span className="text-slate-500">&gt; USER VOICE QUERY:</span> "{jarvisQuery}"
-                </div>
-              )}
-              <div className="text-emerald-400 flex items-start gap-2">
-                <span className="text-slate-500">&gt; JARVIS:</span>
-                <span className="text-slate-200">{jarvisLog}</span>
-              </div>
-            </div>
-
-            {/* Quick Voice Command Buttons */}
-            <div>
-              <span className="text-[11px] font-mono text-slate-500 block mb-2">Simulate Voice Queries:</span>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={() =>
-                    runJarvisCommand(
-                      "Jarvis, check battery status and optimize background memory",
-                      "Diagnostics complete: Battery at 88%. Cleared 4 inactive memory caches. 120Hz refresh sustained."
-                    )
-                  }
-                  className="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-cyan-400 text-xs text-slate-300 transition"
-                >
-                  ⚡ Battery &amp; Memory Diagnostics
-                </button>
-
-                <button
-                  onClick={() =>
-                    runJarvisCommand(
-                      "Jarvis, open MovieBox and preload current trending stream",
-                      "Launching MovieBox activity. Initializing ExoPlayer chunk preloader. Buffering 1080p stream."
-                    )
-                  }
-                  className="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-rose-400 text-xs text-slate-300 transition"
-                >
-                  🎬 Launch MovieBox &amp; Preload
-                </button>
-
-                <button
-                  onClick={() =>
-                    runJarvisCommand(
-                      "Jarvis, summarize Sukant's latest GitHub commit activity",
-                      "Active repository: sukantcodes/sukantcodes. Commits db61825 and 53bb874 verified on main branch."
-                    )
-                  }
-                  className="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-purple-400 text-xs text-slate-300 transition"
-                >
-                  🌐 Query GitHub Commits
-                </button>
-              </div>
+            <h3 className="text-2xl font-black text-white">The Ultimate JARVIS</h3>
+            <p className="text-xs text-slate-300 leading-relaxed">
+              Android Voice Assistant powered by Gemini API, speech recognition &amp; device execution. Autonomous multi-turn tools.
+            </p>
+            <div className="flex flex-wrap gap-2 pt-2">
+              <span className="text-xs font-mono px-2.5 py-1 rounded bg-[#0b1428] text-purple-400 border border-purple-500/30">Kotlin</span>
+              <span className="text-xs font-mono px-2.5 py-1 rounded bg-[#0b1428] text-rose-400 border border-rose-500/30">Gemini 2.5/3.0</span>
+              <span className="text-xs font-mono px-2.5 py-1 rounded bg-[#0b1428] text-emerald-400 border border-emerald-500/30">Android SDK</span>
             </div>
           </div>
-        </div>
 
-        {/* Project 2: MovieBox Streaming Engine */}
-        <div className="bg-[#060c1d] border-2 border-rose-500/40 rounded-3xl p-6 sm:p-10 box-glow-crimson space-y-6">
-          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-rose-500/20 text-rose-400 flex items-center justify-center border border-rose-400/40">
-                <Flame className="w-6 h-6 animate-pulse" />
-              </div>
-              <div>
-                <span className="text-xs font-mono text-rose-400 font-bold uppercase">FEATURED REPO 02 // COMPOSE STREAMING</span>
-                <h3 className="text-2xl font-black text-white">MovieBox Streaming Engine</h3>
-              </div>
+          {/* MovieBox Card */}
+          <div className="bg-[#060c1d] border-2 border-rose-500/40 rounded-3xl p-6 sm:p-8 space-y-4 box-glow-crimson">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <span className="text-xs font-mono text-rose-400 font-bold">REPO 02 // STREAMING</span>
+              <a
+                href="https://github.com/sukantcodes"
+                target="_blank"
+                rel="noreferrer"
+                className="text-rose-400 hover:underline text-xs font-mono flex items-center gap-1"
+              >
+                GitHub <ExternalLink className="w-3 h-3" />
+              </a>
             </div>
-
-            <a
-              href="https://github.com/sukantcodes"
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-mono text-xs font-bold transition"
-            >
-              <span>GitHub Repo</span>
-              <ExternalLink className="w-3 h-3" />
-            </a>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 space-y-4">
-              <p className="text-sm text-slate-300 leading-relaxed">
-                MovieBox is a sleek, modern media streaming client built with declarative Jetpack Compose UI, ExoPlayer integration, dynamic chunk preloading, and reactive Room offline caching.
-              </p>
-              <div className="grid grid-cols-3 gap-3 pt-2">
-                <div className="bg-[#0b1428] p-3 rounded-xl border border-slate-800">
-                  <span className="text-xs font-mono text-rose-400 font-bold block">120Hz</span>
-                  <span className="text-[11px] text-slate-400">Compose UI FPS</span>
-                </div>
-                <div className="bg-[#0b1428] p-3 rounded-xl border border-slate-800">
-                  <span className="text-xs font-mono text-cyan-400 font-bold block">Adaptive</span>
-                  <span className="text-[11px] text-slate-400">ExoPlayer Buffer</span>
-                </div>
-                <div className="bg-[#0b1428] p-3 rounded-xl border border-slate-800">
-                  <span className="text-xs font-mono text-emerald-400 font-bold block">Offline-First</span>
-                  <span className="text-[11px] text-slate-400">Room DB Cache</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Simulated Phone Mockup */}
-            <div className="bg-[#040817] border-2 border-slate-800 rounded-2xl p-4 flex flex-col justify-between space-y-3">
-              <div className="flex items-center justify-between text-[11px] font-mono text-slate-400">
-                <span>MOVIEBOX // MOBILE PREVIEW</span>
-                <span className="text-emerald-400">● 4K BUFFER</span>
-              </div>
-              <div className="h-28 rounded-xl bg-gradient-to-tr from-rose-950/40 via-purple-950/40 to-slate-900 border border-rose-500/30 flex items-center justify-center relative overflow-hidden">
-                <Play className="w-10 h-10 text-rose-400/80 animate-pulse" />
-                <div className="absolute bottom-2 left-3 right-3 h-1.5 rounded-full bg-slate-800 overflow-hidden">
-                  <div className="w-2/3 h-full bg-rose-500" />
-                </div>
-              </div>
-              <div className="text-[11px] font-mono text-slate-400 text-center">
-                Jetpack Compose + ExoMedia Player
-              </div>
+            <h3 className="text-2xl font-black text-white">MovieBox Streaming Engine</h3>
+            <p className="text-xs text-slate-300 leading-relaxed">
+              Modern media player built with Jetpack Compose, ExoPlayer, and responsive architecture. Dynamic chunk caching.
+            </p>
+            <div className="flex flex-wrap gap-2 pt-2">
+              <span className="text-xs font-mono px-2.5 py-1 rounded bg-[#0b1428] text-cyan-400 border border-cyan-500/30">Jetpack Compose</span>
+              <span className="text-xs font-mono px-2.5 py-1 rounded bg-[#0b1428] text-amber-400 border border-amber-500/30">ExoPlayer</span>
+              <span className="text-xs font-mono px-2.5 py-1 rounded bg-[#0b1428] text-emerald-400 border border-emerald-500/30">Room DB</span>
             </div>
           </div>
         </div>
       </section>
 
       {/* ============================================================== */}
-      {/* SECTION 5: 3D INTERACTIVE DEVELOPER LANYARD ID PASS */}
+      {/* SECTION 6: 3D FLIPPABLE DEVELOPER LANYARD ID PASS */}
       {/* ============================================================== */}
       <section id="lanyard" className="py-24 px-4 lg:px-8 max-w-7xl mx-auto space-y-8 relative">
         <div className="text-center space-y-3">
@@ -1048,12 +1222,11 @@ export default function App() {
           </p>
         </div>
 
-        {/* 3D Flip Card Container */}
         <div className="flex justify-center perspective-1000">
-          <div
+          <motion.div
             onClick={() => {
               setIdCardFlipped(!idCardFlipped);
-              playSynthBeep(680, 'triangle', 0.12);
+              playHapticSound('pop');
             }}
             className="w-full max-w-[340px] h-[500px] cursor-pointer relative preserve-3d transition-transform duration-700 ease-in-out"
             style={{
@@ -1062,10 +1235,8 @@ export default function App() {
           >
             {/* FRONT OF BADGE */}
             <div className="absolute inset-0 backface-hidden rounded-3xl bg-[#091124] border-2 border-cyan-400 p-6 flex flex-col justify-between box-glow-multi shadow-2xl overflow-hidden">
-              {/* Lanyard Top Punch */}
               <div className="w-14 h-4 bg-[#030611] rounded-full mx-auto border border-cyan-500/40" />
 
-              {/* Header */}
               <div className="flex items-center justify-between text-xs font-mono border-b border-slate-800 pb-2">
                 <span className="text-[#00ff9d] font-bold flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
@@ -1074,7 +1245,6 @@ export default function App() {
                 <span className="text-cyan-400">#DEV-SKNT-AI</span>
               </div>
 
-              {/* Character Photo with Holographic Sheen */}
               <div className="relative w-40 h-40 mx-auto rounded-2xl overflow-hidden border border-cyan-400/50 bg-[#040817] shadow-xl">
                 <img
                   src="/assets/id.png"
@@ -1084,14 +1254,12 @@ export default function App() {
                 <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent pointer-events-none" />
               </div>
 
-              {/* Developer Details */}
               <div className="text-center space-y-1">
                 <h4 className="text-lg font-black text-white">SUKANT BHATTACHARYA</h4>
                 <p className="text-xs font-mono text-cyan-400">Android &amp; AI Systems Architect</p>
                 <p className="text-[11px] font-mono text-rose-400 font-bold">@sukantcodes</p>
               </div>
 
-              {/* Barcode with Active Laser Beam */}
               <div className="relative bg-[#040711] p-3 rounded-xl border border-slate-800 text-center">
                 <div className="h-6 flex items-center justify-center gap-1">
                   {[3, 1, 4, 2, 5, 2, 1, 4, 2, 3, 1, 5, 2, 4, 1, 3, 2, 4].map((w, i) => (
@@ -1117,7 +1285,6 @@ export default function App() {
                 <h4 className="text-base font-bold text-white">SUKANT CODES // IDENTITY</h4>
               </div>
 
-              {/* Simulated QR Code */}
               <div className="w-36 h-36 mx-auto bg-white p-2 rounded-2xl flex items-center justify-center">
                 <div className="w-full h-full bg-[#030611] rounded-xl flex items-center justify-center text-center p-2 text-white font-mono text-[10px]">
                   <span>github.com/sukantcodes</span>
@@ -1135,12 +1302,12 @@ export default function App() {
                 CLICK TO RETURN TO FRONT
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* ============================================================== */}
-      {/* SECTION 6: MOUNTAIN HORIZONS & PHOTOGRAPHIC ODYSSEY */}
+      {/* SECTION 7: REAL PHOTOGRAPHIC GALLERY */}
       {/* ============================================================== */}
       <section id="photos" className="py-24 px-4 lg:px-8 max-w-7xl mx-auto space-y-10 relative">
         <div className="text-center space-y-3">
@@ -1151,12 +1318,8 @@ export default function App() {
           <h2 className="text-3xl sm:text-5xl font-black text-white neon-glow-green">
             Mountain Horizons &amp; Real Identity
           </h2>
-          <p className="text-sm text-slate-400 max-w-2xl mx-auto">
-            Review the 5 uploaded source photos and how their likeness, hairstyle, streetwear, and personality were extracted into transparent vector assets.
-          </p>
         </div>
 
-        {/* 5 Real Photos Gallery */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           {[
             {
@@ -1185,9 +1348,11 @@ export default function App() {
               path: '/assets/aistudio/file_00000000ef0c82118a0d01ead8452eb1_4f014dbd.jpg'
             }
           ].map((photo, i) => (
-            <div
+            <motion.div
               key={i}
-              className="bg-[#060c1d] border-2 border-slate-800 hover:border-emerald-400/50 rounded-2xl p-3 space-y-2 box-glow-multi transition hover:scale-105 duration-300"
+              whileHover={{ y: -6, scale: 1.04 }}
+              transition={{ type: 'spring', stiffness: 350, damping: 25 }}
+              className="bg-[#060c1d] border-2 border-slate-800 hover:border-emerald-400/50 rounded-2xl p-3 space-y-2 box-glow-multi"
             >
               <div className="aspect-[3/4] rounded-xl overflow-hidden bg-slate-900 relative">
                 <img src={photo.path} alt={photo.title} className="w-full h-full object-cover" />
@@ -1197,26 +1362,25 @@ export default function App() {
               </div>
               <h4 className="font-bold text-xs text-white">{photo.title}</h4>
               <p className="text-[11px] text-slate-400">{photo.use}</p>
-            </div>
+            </motion.div>
           ))}
         </div>
       </section>
 
       {/* ============================================================== */}
-      {/* SECTION 7: 3D ENGINEERING ROADMAP */}
+      {/* SECTION 8: ROADMAP */}
       {/* ============================================================== */}
       <section id="roadmap" className="py-24 px-4 lg:px-8 max-w-5xl mx-auto space-y-12 relative">
         <div className="text-center space-y-3">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-xs font-mono text-cyan-400 font-bold">
             <Activity className="w-3.5 h-3.5" />
-            <span>CHRONOLOGICAL MATRIX &amp; ENGINEERING EVOLUTION</span>
+            <span>ENGINEERING EVOLUTION</span>
           </div>
           <h2 className="text-3xl sm:text-5xl font-black text-white neon-glow-cyan">
             Architectural Milestones
           </h2>
         </div>
 
-        {/* Vertical Timeline */}
         <div className="relative border-l-2 border-cyan-500/40 ml-4 sm:ml-32 space-y-10">
           {[
             {
@@ -1258,25 +1422,23 @@ export default function App() {
       </section>
 
       {/* ============================================================== */}
-      {/* SECTION 8: INTERACTIVE CYBER TERMINAL */}
+      {/* SECTION 9: CYBER TERMINAL */}
       {/* ============================================================== */}
       <section id="terminal" className="py-24 px-4 lg:px-8 max-w-4xl mx-auto space-y-8 relative">
         <div className="text-center space-y-3">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-xs font-mono text-emerald-400 font-bold">
             <TerminalIcon className="w-3.5 h-3.5" />
-            <span>INTERACTIVE CYBERNETIC SHELL</span>
+            <span>INTERACTIVE CYBER SHELL</span>
           </div>
           <h2 className="text-3xl sm:text-5xl font-black text-white neon-glow-green">
             Terminal Diagnostics Console
           </h2>
           <p className="text-sm text-slate-400">
-            Type <code className="text-emerald-400 font-mono">help</code>, <code className="text-emerald-400 font-mono">skills</code>, <code className="text-emerald-400 font-mono">projects</code>, <code className="text-emerald-400 font-mono">download</code>, or <code className="text-emerald-400 font-mono">matrix</code>.
+            Type <code className="text-emerald-400 font-mono">help</code>, <code className="text-emerald-400 font-mono">skills</code>, <code className="text-emerald-400 font-mono">projects</code>, or <code className="text-emerald-400 font-mono">download</code>.
           </p>
         </div>
 
-        {/* Terminal Window */}
         <div className="bg-[#030713] border-2 border-emerald-500/40 rounded-3xl p-5 box-glow-cyan shadow-2xl font-mono text-xs">
-          {/* Terminal Titlebar */}
           <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-3 text-slate-500">
             <div className="flex items-center gap-2">
               <span className="w-3 h-3 rounded-full bg-rose-500" />
@@ -1287,7 +1449,6 @@ export default function App() {
             <span>BASH 5.2</span>
           </div>
 
-          {/* Logs */}
           <div className="space-y-1.5 h-64 overflow-y-auto no-scrollbar text-slate-300">
             {terminalLogs.map((log, i) => (
               <div
@@ -1305,7 +1466,6 @@ export default function App() {
             ))}
           </div>
 
-          {/* Command Input Prompt */}
           <form onSubmit={handleTerminalSubmit} className="mt-3 pt-3 border-t border-slate-800 flex items-center gap-2">
             <span className="text-emerald-400 font-bold">&gt;</span>
             <input
@@ -1326,7 +1486,7 @@ export default function App() {
       </section>
 
       {/* ============================================================== */}
-      {/* SECTION 9: 3D CONNECT & DIRECT TRANSMISSION */}
+      {/* SECTION 10: CONNECT & TRANSMISSION */}
       {/* ============================================================== */}
       <section id="connect" className="py-24 px-4 lg:px-8 max-w-5xl mx-auto space-y-12 relative">
         <div className="text-center space-y-3">
@@ -1337,18 +1497,15 @@ export default function App() {
           <h2 className="text-3xl sm:text-5xl font-black text-white neon-glow-cyan">
             Connect With Sukant
           </h2>
-          <p className="text-sm text-slate-400 max-w-xl mx-auto">
-            Available for mobile architecture consulting, Android system contracts, and autonomous voice AI engineering.
-          </p>
         </div>
 
-        {/* 4 Neon Touchpoint Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <a
+          <motion.a
+            whileHover={{ y: -4, scale: 1.02 }}
             href="https://github.com/sukantcodes"
             target="_blank"
             rel="noreferrer"
-            className="bg-[#060c1d] border-2 border-cyan-500/40 hover:border-cyan-400 p-5 rounded-2xl box-glow-cyan transition flex flex-col justify-between space-y-4 hover:-translate-y-1"
+            className="bg-[#060c1d] border-2 border-cyan-500/40 hover:border-cyan-400 p-5 rounded-2xl box-glow-cyan transition flex flex-col justify-between space-y-4"
           >
             <div>
               <span className="text-xs font-mono text-cyan-400 font-bold block">01 // CODE REPOSITORIES</span>
@@ -1358,13 +1515,14 @@ export default function App() {
             <span className="text-xs font-mono text-cyan-400 flex items-center gap-1">
               Visit Profile <ArrowRight className="w-3.5 h-3.5" />
             </span>
-          </a>
+          </motion.a>
 
-          <a
+          <motion.a
+            whileHover={{ y: -4, scale: 1.02 }}
             href="https://linkedin.com/in/sukantcodes"
             target="_blank"
             rel="noreferrer"
-            className="bg-[#060c1d] border-2 border-blue-500/40 hover:border-blue-400 p-5 rounded-2xl box-glow-cyan transition flex flex-col justify-between space-y-4 hover:-translate-y-1"
+            className="bg-[#060c1d] border-2 border-blue-500/40 hover:border-blue-400 p-5 rounded-2xl box-glow-cyan transition flex flex-col justify-between space-y-4"
           >
             <div>
               <span className="text-xs font-mono text-blue-400 font-bold block">02 // PROFESSIONAL NETWORK</span>
@@ -1374,11 +1532,12 @@ export default function App() {
             <span className="text-xs font-mono text-blue-400 flex items-center gap-1">
               Connect <ArrowRight className="w-3.5 h-3.5" />
             </span>
-          </a>
+          </motion.a>
 
-          <a
+          <motion.a
+            whileHover={{ y: -4, scale: 1.02 }}
             href="mailto:sukantxplodeprime@gmail.com"
-            className="bg-[#060c1d] border-2 border-rose-500/40 hover:border-rose-400 p-5 rounded-2xl box-glow-crimson transition flex flex-col justify-between space-y-4 hover:-translate-y-1"
+            className="bg-[#060c1d] border-2 border-rose-500/40 hover:border-rose-400 p-5 rounded-2xl box-glow-crimson transition flex flex-col justify-between space-y-4"
           >
             <div>
               <span className="text-xs font-mono text-rose-400 font-bold block">03 // DIRECT INQUIRIES</span>
@@ -1388,9 +1547,12 @@ export default function App() {
             <span className="text-xs font-mono text-rose-400 flex items-center gap-1">
               Send Email <ArrowRight className="w-3.5 h-3.5" />
             </span>
-          </a>
+          </motion.a>
 
-          <div className="bg-[#060c1d] border-2 border-amber-500/40 p-5 rounded-2xl box-glow-multi transition flex flex-col justify-between space-y-4">
+          <motion.div
+            whileHover={{ y: -4, scale: 1.02 }}
+            className="bg-[#060c1d] border-2 border-amber-500/40 p-5 rounded-2xl box-glow-multi transition flex flex-col justify-between space-y-4"
+          >
             <div>
               <span className="text-xs font-mono text-amber-400 font-bold block">04 // MENTORSHIP</span>
               <h4 className="text-lg font-bold text-white mt-1">Topmate 1:1</h4>
@@ -1399,12 +1561,12 @@ export default function App() {
             <span className="text-xs font-mono text-amber-400 flex items-center gap-1">
               Available <ArrowRight className="w-3.5 h-3.5" />
             </span>
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* ============================================================== */}
-      {/* SECTION 10: COMPLETE PLAYBOOK PACKAGE & EXPORTER */}
+      {/* FINAL EXPORT BANNER WITH CONFETTI */}
       {/* ============================================================== */}
       <section className="py-20 px-4 lg:px-8 max-w-5xl mx-auto border-t border-cyan-500/20 space-y-8">
         <div className="bg-gradient-to-r from-[#071329] via-[#0b1736] to-[#12071f] border-2 border-cyan-400/50 rounded-3xl p-8 box-glow-multi flex flex-wrap items-center justify-between gap-6">
@@ -1419,42 +1581,43 @@ export default function App() {
           </div>
 
           <div className="flex flex-wrap gap-3">
-            <a
+            <motion.a
+              whileHover={{ scale: 1.06 }}
+              whileTap={{ scale: 0.94 }}
               href="/profile-assets.zip"
               download="profile-assets.zip"
               onClick={triggerConfetti}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#00f5ff] to-[#ff0055] text-black font-black text-sm shadow-xl shadow-cyan-500/40 hover:scale-105 transition active:scale-95"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-r from-[#00f5ff] to-[#ff2d55] text-black font-black text-sm shadow-xl shadow-cyan-500/40 transition"
             >
               <Download className="w-4 h-4" />
               <span>Download profile-assets.zip</span>
-            </a>
+            </motion.a>
 
-            <button
+            <motion.button
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.96 }}
               onClick={copyReadme}
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 text-sm font-semibold transition"
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 text-sm font-semibold transition"
             >
               <Copy className="w-4 h-4 text-cyan-400" />
               <span>Copy Raw README</span>
-            </button>
+            </motion.button>
           </div>
         </div>
       </section>
 
       {/* Cyber Footer */}
-      <footer className="border-t border-slate-800/80 bg-[#02040a] py-10 px-4 text-center text-xs text-slate-500 space-y-3">
+      <footer className="border-t border-white/10 bg-[#02040a] py-10 px-4 text-center text-xs text-slate-500 space-y-3">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
           <span className="font-mono text-slate-400 font-bold">
-            SUKANT CODES // THE PROFILE PLAYBOOK 3D UNIVERSE
+            SUKANT CODES // 120HZ IPHONE-GRADE ANIMATED VISION
           </span>
           <div className="flex items-center gap-4 text-slate-400 font-mono">
-            <span>#00f5ff • #ff0055 • #00ff9d</span>
-            <span>Self-Contained SVGs</span>
-            <span>Zero Network Calls</span>
+            <span>#00f5ff • #ff2d55 • #34c759</span>
+            <span>Motion Springs</span>
+            <span>Zero External Lag</span>
           </div>
         </div>
-        <p className="text-[11px] text-slate-600">
-          Crafted with extreme kinetic vector physics &amp; multi-spectral neon glows for @sukantcodes.
-        </p>
       </footer>
     </div>
   );
