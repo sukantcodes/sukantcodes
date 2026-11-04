@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 460" width="100%" height="100%">
+  <style>
+    @media (prefers-reduced-motion: reduce) {
+      .orbit-spin, .node-pulse {
+        animation: none !important;
+      }
+    }
+
+    .bg-main { fill: #070b16; }
+    .text-title { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-weight: 800; fill: #f8fafc; }
+    .text-mono { font-family: ui-monospace, SFMono-Regular, "Roboto Mono", Menlo, monospace; }
+    .chip { fill: #0d1527; stroke: #1e293b; stroke-width: 1px; rx: 6px; }
+    .chip-text { font-family: ui-monospace, SFMono-Regular, monospace; font-size: 11px; fill: #e2e8f0; font-weight: 600; }
+
+    /* Orbital Motion Animations */
+    @keyframes orbitRotate1 {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    @keyframes orbitRotate2 {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(-360deg); }
+    }
+    @keyframes orbitRotate3 {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .orbit-1 { transform-origin: 460px 180px; animation: orbitRotate1 24s linear infinite; }
+    .orbit-2 { transform-origin: 460px 180px; animation: orbitRotate2 32s linear infinite; }
+    .orbit-3 { transform-origin: 460px 180px; animation: orbitRotate3 40s linear infinite; }
+
+    /* Pulse Glow */
+    @keyframes nodeGlow {
+      0%, 100% { filter: drop-shadow(0 0 4px #247bff); }
+      50% { filter: drop-shadow(0 0 10px #38bdf8); }
+    }
+    .node-pulse { animation: nodeGlow 3s ease-in-out infinite; }
+  </style>
+
+  
+  <defs>
+    <!-- Dot Matrix Pattern -->
+    <pattern id="dot-matrix" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.2" fill="#1b2742" opacity="0.6"/>
+    </pattern>
+
+    <!-- Hairline Gradients -->
+    <linearGradient id="cyber-border" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#247bff" stop-opacity="0.8"/>
+      <stop offset="50%" stop-color="#38bdf8" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#ff354f" stop-opacity="0.8"/>
+    </linearGradient>
+
+    <linearGradient id="blue-glow-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#247bff"/>
+      <stop offset="100%" stop-color="#38bdf8"/>
+    </linearGradient>
+
+    <linearGradient id="crimson-glow-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ff354f"/>
+      <stop offset="100%" stop-color="#ff6b81"/>
+    </linearGradient>
+
+    <radialGradient id="halo-radial" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#247bff" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#070b16" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Foil Light Sweep Filter -->
+    <linearGradient id="foil-sweep" x1="-100%" y1="0%" x2="200%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="45%" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#ffffff" stop-opacity="0.45"/>
+      <stop offset="55%" stop-color="#ffffff" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+      <animate attributeName="x1" from="-100%" to="150%" dur="4s" repeatCount="indefinite"/>
+      <animate attributeName="x2" from="0%" to="250%" dur="4s" repeatCount="indefinite"/>
+    </linearGradient>
+
+    <!-- Filters -->
+    <filter id="soft-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+
+    <clipPath id="portrait-rounded">
+      <rect x="0" y="0" width="220" height="220" rx="20"/>
+    </clipPath>
+  </defs>
+
+
+  <!-- Main Container -->
+  <rect x="6" y="6" width="908" height="448" rx="20" class="bg-main"/>
+  <rect x="6" y="6" width="908" height="448" rx="20" fill="url(#dot-matrix)"/>
+  <rect x="6" y="6" width="908" height="448" rx="20" fill="none" stroke="url(#cyber-border)" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <g transform="translate(48, 36)">
+    <text x="0" y="0" class="text-mono" font-size="11" fill="#247bff" font-weight="700" letter-spacing="0.1em">SECTION 03 // ARCHITECTURAL TOOLKIT</text>
+    <text x="0" y="26" class="text-title" font-size="24">Three-Tier Orbital Tech Matrix</text>
+  </g>
+
+  <!-- Orbital Solar System (Center: 460, 180) -->
+  <g id="orbital-system">
+    <!-- Center Core: AI CORE / KOTLIN -->
+    <circle cx="460" cy="180" r="32" fill="#0b1222" stroke="url(#cyber-border)" stroke-width="2"/>
+    <circle cx="460" cy="180" r="24" fill="#13203c"/>
+    <text x="460" y="176" text-anchor="middle" class="text-mono" font-size="10" fill="#38bdf8" font-weight="700">SUKANT</text>
+    <text x="460" y="190" text-anchor="middle" class="text-mono" font-size="9" fill="#ff354f" font-weight="700">CORE</text>
+
+    <!-- Orbit 1: Tilted Ellipse (Inner: Mobile Core) -->
+    <ellipse cx="460" cy="180" rx="140" ry="58" fill="none" stroke="#247bff" stroke-width="1.2" stroke-dasharray="6,4" opacity="0.6" transform="rotate(-10 460 180)"/>
+    <g class="orbit-1">
+      <!-- Kotlin Node -->
+      <g transform="translate(340, 155)">
+        <circle cx="16" cy="16" r="18" fill="#131d33" stroke="#7f52ff" stroke-width="1.5" class="node-pulse"/>
+        <text x="16" y="20" text-anchor="middle" class="text-mono" font-size="11" fill="#c084fc" font-weight="700">K</text>
+      </g>
+      <!-- Android Node -->
+      <g transform="translate(560, 175)">
+        <circle cx="16" cy="16" r="18" fill="#131d33" stroke="#3ddc84" stroke-width="1.5" class="node-pulse"/>
+        <text x="16" y="20" text-anchor="middle" class="text-mono" font-size="10" fill="#3ddc84" font-weight="700">AND</text>
+      </g>
+    </g>
+
+    <!-- Orbit 2: Tilted Ellipse (Middle: Intelligence & Backend) -->
+    <ellipse cx="460" cy="180" rx="230" ry="85" fill="none" stroke="#ff354f" stroke-width="1.2" stroke-dasharray="8,6" opacity="0.5" transform="rotate(12 460 180)"/>
+    <g class="orbit-2">
+      <!-- Python Node -->
+      <g transform="translate(250, 130)">
+        <circle cx="16" cy="16" r="18" fill="#131d33" stroke="#38bdf8" stroke-width="1.5"/>
+        <text x="16" y="20" text-anchor="middle" class="text-mono" font-size="10" fill="#38bdf8" font-weight="700">PY</text>
+      </g>
+      <!-- Gemini Node -->
+      <g transform="translate(640, 150)">
+        <circle cx="16" cy="16" r="18" fill="#131d33" stroke="#ff354f" stroke-width="1.5"/>
+        <text x="16" y="20" text-anchor="middle" class="text-mono" font-size="9" fill="#ff6b81" font-weight="700">AI</text>
+      </g>
+      <!-- PyTorch Node -->
+      <g transform="translate(420, 250)">
+        <circle cx="16" cy="16" r="18" fill="#131d33" stroke="#ee4c2c" stroke-width="1.5"/>
+        <text x="16" y="20" text-anchor="middle" class="text-mono" font-size="9" fill="#ee4c2c" font-weight="700">TORCH</text>
+      </g>
+    </g>
+
+    <!-- Orbit 3: Tilted Ellipse (Outer: Ecosystem & DevTools) -->
+    <ellipse cx="460" cy="180" rx="340" ry="110" fill="none" stroke="#38bdf8" stroke-width="1" stroke-dasharray="10,8" opacity="0.35" transform="rotate(-6 460 180)"/>
+    <g class="orbit-3">
+      <!-- Git Node -->
+      <g transform="translate(140, 160)">
+        <circle cx="16" cy="16" r="18" fill="#131d33" stroke="#f05032" stroke-width="1.5"/>
+        <text x="16" y="20" text-anchor="middle" class="text-mono" font-size="10" fill="#f05032" font-weight="700">GIT</text>
+      </g>
+      <!-- Docker Node -->
+      <g transform="translate(740, 180)">
+        <circle cx="16" cy="16" r="18" fill="#131d33" stroke="#2496ed" stroke-width="1.5"/>
+        <text x="16" y="20" text-anchor="middle" class="text-mono" font-size="9" fill="#2496ed" font-weight="700">DOC</text>
+      </g>
+      <!-- Compose Node -->
+      <g transform="translate(360, 70)">
+        <circle cx="16" cy="16" r="18" fill="#131d33" stroke="#4285f4" stroke-width="1.5"/>
+        <text x="16" y="20" text-anchor="middle" class="text-mono" font-size="9" fill="#4285f4" font-weight="700">CMP</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- Bottom Grouped Stack Chips (3 Columns) -->
+  <g transform="translate(48, 320)">
+    <!-- Group 1: Mobile Engineering -->
+    <g transform="translate(0, 0)">
+      <text x="0" y="0" class="text-mono" font-size="11" fill="#7f52ff" font-weight="700">MOBILE ECOSYSTEM</text>
+      <g transform="translate(0, 12)">
+        <rect x="0" y="0" width="75" height="26" class="chip" stroke="#7f52ff"/>
+        <text x="12" y="17" class="chip-text" fill="#c084fc">Kotlin</text>
+
+        <rect x="83" y="0" width="85" height="26" class="chip" stroke="#3ddc84"/>
+        <text x="95" y="17" class="chip-text" fill="#3ddc84">Android</text>
+
+        <rect x="176" y="0" width="80" height="26" class="chip"/>
+        <text x="188" y="17" class="chip-text">Compose</text>
+
+        <rect x="0" y="32" width="90" height="26" class="chip"/>
+        <text x="12" y="49" class="chip-text">Coroutines</text>
+
+        <rect x="98" y="32" width="75" height="26" class="chip"/>
+        <text x="110" y="49" class="chip-text">ExoPlayer</text>
+
+        <rect x="181" y="32" width="75" height="26" class="chip"/>
+        <text x="193" y="49" class="chip-text">Retrofit</text>
+      </g>
+    </g>
+
+    <!-- Group 2: Intelligence & Systems -->
+    <g transform="translate(285, 0)">
+      <text x="0" y="0" class="text-mono" font-size="11" fill="#ff354f" font-weight="700">AI &amp; INTELLIGENCE</text>
+      <g transform="translate(0, 12)">
+        <rect x="0" y="0" width="85" height="26" class="chip" stroke="#ff354f"/>
+        <text x="12" y="17" class="chip-text" fill="#ff6b81">Gemini AI</text>
+
+        <rect x="93" y="0" width="75" height="26" class="chip"/>
+        <text x="105" y="17" class="chip-text">Python</text>
+
+        <rect x="176" y="0" width="80" height="26" class="chip"/>
+        <text x="188" y="17" class="chip-text">PyTorch</text>
+
+        <rect x="0" y="32" width="85" height="26" class="chip"/>
+        <text x="12" y="49" class="chip-text">Speech AI</text>
+
+        <rect x="93" y="32" width="80" height="26" class="chip"/>
+        <text x="105" y="49" class="chip-text">FastAPI</text>
+
+        <rect x="181" y="32" width="75" height="26" class="chip"/>
+        <text x="193" y="49" class="chip-text">Agents</text>
+      </g>
+    </g>
+
+    <!-- Group 3: DevOps & Architecture -->
+    <g transform="translate(570, 0)">
+      <text x="0" y="0" class="text-mono" font-size="11" fill="#38bdf8" font-weight="700">DEVOPS &amp; TOOLING</text>
+      <g transform="translate(0, 12)">
+        <rect x="0" y="0" width="65" height="26" class="chip" stroke="#f05032"/>
+        <text x="12" y="17" class="chip-text" fill="#fca5a5">Git</text>
+
+        <rect x="73" y="0" width="80" height="26" class="chip"/>
+        <text x="85" y="17" class="chip-text">GitHub CI</text>
+
+        <rect x="161" y="0" width="75" height="26" class="chip"/>
+        <text x="173" y="17" class="chip-text">Docker</text>
+
+        <rect x="0" y="32" width="75" height="26" class="chip"/>
+        <text x="12" y="49" class="chip-text">Linux</text>
+
+        <rect x="83" y="32" width="80" height="26" class="chip"/>
+        <text x="95" y="49" class="chip-text">Gradle</text>
+
+        <rect x="171" y="32" width="85" height="26" class="chip"/>
+        <text x="183" y="49" class="chip-text">TypeScript</text>
+      </g>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 420" width="100%" height="100%">
+  <style>
+    @media (prefers-reduced-motion: reduce) {
+      .bar-progress-1, .bar-progress-2, .bar-progress-3,
+      .slide-1, .slide-2, .slide-3 {
+        animation: none !important;
+      }
+      .slide-1 { opacity: 1 !important; }
+      .bar-progress-1 { width: 100% !important; }
+    }
+
+    .card-bg { fill: #070b16; }
+    .inner-card { fill: #0b1122; stroke: #1e293b; stroke-width: 1px; }
+    .text-head { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-weight: 800; fill: #f8fafc; }
+    .text-body { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; fill: #94a3b8; }
+    .text-mono { font-family: ui-monospace, SFMono-Regular, "Roboto Mono", Menlo, monospace; }
+
+    /* Segment progress bar animation (12s cycle: 0-4s bar1, 4-8s bar2, 8-12s bar3) */
+    @keyframes progress1 {
+      0% { width: 0; }
+      30%, 100% { width: 110px; }
+    }
+    @keyframes progress2 {
+      0%, 33% { width: 0; }
+      63%, 100% { width: 110px; }
+    }
+    @keyframes progress3 {
+      0%, 66% { width: 0; }
+      96%, 100% { width: 110px; }
+    }
+
+    .bar-progress-1 { animation: progress1 12s linear infinite; }
+    .bar-progress-2 { animation: progress2 12s linear infinite; }
+    .bar-progress-3 { animation: progress3 12s linear infinite; }
+
+    /* Carousel Slides (3 slides x 4s = 12s total) */
+    @keyframes slideCycle1 {
+      0%, 30% { opacity: 1; transform: translateX(0); }
+      33%, 97% { opacity: 0; transform: translateX(15px); }
+      100% { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes slideCycle2 {
+      0%, 30% { opacity: 0; transform: translateX(-15px); }
+      33%, 63% { opacity: 1; transform: translateX(0); }
+      66%, 100% { opacity: 0; transform: translateX(15px); }
+    }
+    @keyframes slideCycle3 {
+      0%, 63% { opacity: 0; transform: translateX(-15px); }
+      66%, 96% { opacity: 1; transform: translateX(0); }
+      99%, 100% { opacity: 0; transform: translateX(15px); }
+    }
+
+    .slide-1 { animation: slideCycle1 12s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+    .slide-2 { animation: slideCycle2 12s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+    .slide-3 { animation: slideCycle3 12s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+  </style>
+
+  
+  <defs>
+    <!-- Dot Matrix Pattern -->
+    <pattern id="dot-matrix" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.2" fill="#1b2742" opacity="0.6"/>
+    </pattern>
+
+    <!-- Hairline Gradients -->
+    <linearGradient id="cyber-border" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#247bff" stop-opacity="0.8"/>
+      <stop offset="50%" stop-color="#38bdf8" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#ff354f" stop-opacity="0.8"/>
+    </linearGradient>
+
+    <linearGradient id="blue-glow-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#247bff"/>
+      <stop offset="100%" stop-color="#38bdf8"/>
+    </linearGradient>
+
+    <linearGradient id="crimson-glow-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ff354f"/>
+      <stop offset="100%" stop-color="#ff6b81"/>
+    </linearGradient>
+
+    <radialGradient id="halo-radial" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#247bff" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#070b16" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Foil Light Sweep Filter -->
+    <linearGradient id="foil-sweep" x1="-100%" y1="0%" x2="200%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="45%" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#ffffff" stop-opacity="0.45"/>
+      <stop offset="55%" stop-color="#ffffff" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+      <animate attributeName="x1" from="-100%" to="150%" dur="4s" repeatCount="indefinite"/>
+      <animate attributeName="x2" from="0%" to="250%" dur="4s" repeatCount="indefinite"/>
+    </linearGradient>
+
+    <!-- Filters -->
+    <filter id="soft-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+
+    <clipPath id="portrait-rounded">
+      <rect x="0" y="0" width="220" height="220" rx="20"/>
+    </clipPath>
+  </defs>
+
+
+  <!-- Main Container -->
+  <rect x="6" y="6" width="908" height="408" rx="20" class="card-bg"/>
+  <rect x="6" y="6" width="908" height="408" rx="20" fill="url(#dot-matrix)"/>
+  <rect x="6" y="6" width="908" height="408" rx="20" fill="none" stroke="url(#cyber-border)" stroke-width="1.5"/>
+
+  <!-- Left Side: Engineering Capabilities -->
+  <g transform="translate(36, 36)">
+    <rect x="0" y="0" width="410" height="348" rx="16" class="inner-card"/>
+    
+    <!-- Header -->
+    <g transform="translate(24, 28)">
+      <text x="0" y="0" class="text-mono" font-size="11" fill="#247bff" font-weight="700" letter-spacing="0.1em">SECTION 02 // CAPABILITIES</text>
+      <text x="0" y="26" class="text-head" font-size="22">Core Engineering Discipline</text>
+    </g>
+
+    <!-- 4 Capability Rows -->
+    <g transform="translate(24, 88)">
+      <!-- Item 1 -->
+      <g transform="translate(0, 0)">
+        <rect x="0" y="0" width="362" height="52" rx="8" fill="#10192e" stroke="#1e293b" stroke-width="1"/>
+        <circle cx="26" cy="26" r="14" fill="#247bff" opacity="0.2"/>
+        <text x="20" y="31" font-size="14">📱</text>
+        <text x="52" y="22" class="text-head" font-size="13">Mobile Architecture</text>
+        <text x="52" y="38" class="text-body" font-size="11">Jetpack Compose, Kotlin Multiplatform, MVI/MVVM</text>
+      </g>
+
+      <!-- Item 2 -->
+      <g transform="translate(0, 60)">
+        <rect x="0" y="0" width="362" height="52" rx="8" fill="#10192e" stroke="#1e293b" stroke-width="1"/>
+        <circle cx="26" cy="26" r="14" fill="#ff354f" opacity="0.2"/>
+        <text x="20" y="31" font-size="14">🧠</text>
+        <text x="52" y="22" class="text-head" font-size="13">Autonomous AI &amp; Voice</text>
+        <text x="52" y="38" class="text-body" font-size="11">Voice Agents, Gemini API, On-device Neural Models</text>
+      </g>
+
+      <!-- Item 3 -->
+      <g transform="translate(0, 120)">
+        <rect x="0" y="0" width="362" height="52" rx="8" fill="#10192e" stroke="#1e293b" stroke-width="1"/>
+        <circle cx="26" cy="26" r="14" fill="#10b981" opacity="0.2"/>
+        <text x="20" y="31" font-size="14">⚡</text>
+        <text x="52" y="22" class="text-head" font-size="13">Fluid Motion &amp; Performance</text>
+        <text x="52" y="38" class="text-body" font-size="11">120Hz micro-interactions, Memory profiling, Cache</text>
+      </g>
+
+      <!-- Item 4 -->
+      <g transform="translate(0, 180)">
+        <rect x="0" y="0" width="362" height="52" rx="8" fill="#10192e" stroke="#1e293b" stroke-width="1"/>
+        <circle cx="26" cy="26" r="14" fill="#a855f7" opacity="0.2"/>
+        <text x="20" y="31" font-size="14">🛠️</text>
+        <text x="52" y="22" class="text-head" font-size="13">Systems &amp; DevOps</text>
+        <text x="52" y="38" class="text-body" font-size="11">Clean Architecture, GitHub CI/CD, Containerization</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- Right Side: Three-Slide Interests Carousel Changing Every 4s with Segment Bars -->
+  <g transform="translate(474, 36)">
+    <rect x="0" y="0" width="410" height="348" rx="16" class="inner-card"/>
+
+    <!-- Header & Segment Bars -->
+    <g transform="translate(24, 28)">
+      <text x="0" y="0" class="text-mono" font-size="11" fill="#38bdf8" font-weight="700" letter-spacing="0.1em">INTERESTS // THREE-SLIDE CAROUSEL</text>
+      <text x="0" y="26" class="text-head" font-size="22">Passions &amp; Focus Areas</text>
+
+      <!-- Segment Progress Bars (3 segments) -->
+      <g transform="translate(0, 42)">
+        <!-- Bar 1 Base -->
+        <rect x="0" y="0" width="112" height="4" rx="2" fill="#1e293b"/>
+        <rect x="0" y="0" width="0" height="4" rx="2" fill="#247bff" class="bar-progress-1"/>
+
+        <!-- Bar 2 Base -->
+        <rect x="124" y="0" width="112" height="4" rx="2" fill="#1e293b"/>
+        <rect x="124" y="0" width="0" height="4" rx="2" fill="#ff354f" class="bar-progress-2"/>
+
+        <!-- Bar 3 Base -->
+        <rect x="248" y="0" width="112" height="4" rx="2" fill="#1e293b"/>
+        <rect x="248" y="0" width="0" height="4" rx="2" fill="#38bdf8" class="bar-progress-3"/>
+      </g>
+    </g>
+
+    <!-- Slide Container with Cycling Content -->
+    <g transform="translate(24, 115)">
+      <!-- Slide 1: Autonomous Voice Systems (0-4s) -->
+      <g class="slide-1">
+        <rect x="0" y="0" width="362" height="205" rx="12" fill="#10192e" stroke="#247bff" stroke-width="1"/>
+        <g transform="translate(20, 24)">
+          <text x="0" y="0" class="text-mono" font-size="11" fill="#247bff" font-weight="700">SLIDE 01 / 03 • AI SYSTEMS</text>
+          <text x="0" y="28" class="text-head" font-size="19" fill="#f8fafc">The Ultimate JARVIS Voice AI</text>
+          <text x="0" y="58" class="text-body" font-size="13">
+            Building intelligent Android voice assistants with
+          </text>
+          <text x="0" y="78" class="text-body" font-size="13">
+            sub-second speech recognition, Gemini API agent
+          </text>
+          <text x="0" y="98" class="text-body" font-size="13">
+            orchestration, and autonomous device actions.
+          </text>
+
+          <g transform="translate(0, 125)">
+            <rect x="0" y="0" width="85" height="24" rx="4" fill="#1e293b"/>
+            <text x="12" y="16" class="text-mono" font-size="11" fill="#38bdf8">Kotlin</text>
+            <rect x="95" y="0" width="95" height="24" rx="4" fill="#1e293b"/>
+            <text x="107" y="16" class="text-mono" font-size="11" fill="#ff6b81">Gemini AI</text>
+            <rect x="200" y="0" width="105" height="24" rx="4" fill="#1e293b"/>
+            <text x="212" y="16" class="text-mono" font-size="11" fill="#34d399">Speech Core</text>
+          </g>
+        </g>
+      </g>
+
+      <!-- Slide 2: Next-Gen Mobile Media (4-8s) -->
+      <g class="slide-2" opacity="0">
+        <rect x="0" y="0" width="362" height="205" rx="12" fill="#10192e" stroke="#ff354f" stroke-width="1"/>
+        <g transform="translate(20, 24)">
+          <text x="0" y="0" class="text-mono" font-size="11" fill="#ff354f" font-weight="700">SLIDE 02 / 03 • STREAMING ARCHITECTURE</text>
+          <text x="0" y="28" class="text-head" font-size="19" fill="#f8fafc">MovieBox &amp; Media Engines</text>
+          <text x="0" y="58" class="text-body" font-size="13">
+            Engineering high-performance video streaming with
+          </text>
+          <text x="0" y="78" class="text-body" font-size="13">
+            ExoPlayer, dynamic chunk preloading, custom
+          </text>
+          <text x="0" y="98" class="text-body" font-size="13">
+            Compose layouts, and silky smooth transitions.
+          </text>
+
+          <g transform="translate(0, 125)">
+            <rect x="0" y="0" width="130" height="24" rx="4" fill="#1e293b"/>
+            <text x="12" y="16" class="text-mono" font-size="11" fill="#38bdf8">Jetpack Compose</text>
+            <rect x="140" y="0" width="90" height="24" rx="4" fill="#1e293b"/>
+            <text x="152" y="16" class="text-mono" font-size="11" fill="#fbbf24">ExoPlayer</text>
+            <rect x="240" y="0" width="75" height="24" rx="4" fill="#1e293b"/>
+            <text x="252" y="16" class="text-mono" font-size="11" fill="#a855f7">Cache</text>
+          </g>
+        </g>
+      </g>
+
+      <!-- Slide 3: Exploration & Photography (8-12s) -->
+      <g class="slide-3" opacity="0">
+        <rect x="0" y="0" width="362" height="205" rx="12" fill="#10192e" stroke="#38bdf8" stroke-width="1"/>
+        <g transform="translate(20, 24)">
+          <text x="0" y="0" class="text-mono" font-size="11" fill="#38bdf8" font-weight="700">SLIDE 03 / 03 • FIELD &amp; CRAFT</text>
+          <text x="0" y="28" class="text-head" font-size="19" fill="#f8fafc">Mountain Explorations &amp; Lens</text>
+          <text x="0" y="58" class="text-body" font-size="13">
+            Capturing sunrise peaks, misty mountain ranges,
+          </text>
+          <text x="0" y="78" class="text-body" font-size="13">
+            and translating atmospheric patience into clean,
+          </text>
+          <text x="0" y="98" class="text-body" font-size="13">
+            meticulously architected code and digital products.
+          </text>
+
+          <g transform="translate(0, 125)">
+            <rect x="0" y="0" width="115" height="24" rx="4" fill="#1e293b"/>
+            <text x="12" y="16" class="text-mono" font-size="11" fill="#38bdf8">Photography</text>
+            <rect x="125" y="0" width="95" height="24" rx="4" fill="#1e293b"/>
+            <text x="137" y="16" class="text-mono" font-size="11" fill="#10b981">Trekking</text>
+            <rect x="230" y="0" width="90" height="24" rx="4" fill="#1e293b"/>
+            <text x="242" y="16" class="text-mono" font-size="11" fill="#f43f5e">Aesthetics</text>
+          </g>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,285 @@
+<!-- Sukant Codes GitHub Profile Preview Suite -->
+<!-- Copy of public/preview.html for repository root -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sukant Codes — GitHub Profile Suite Verification Preview</title>
+  <style>
+    :root {
+      --bg: #070b16;
+      --card-bg: #0b1122;
+      --border: #1e293b;
+      --accent: #247bff;
+      --accent-crimson: #ff354f;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding: 32px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .header-bar {
+      max-width: 960px;
+      width: 100%;
+      margin-bottom: 24px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 20px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      background: rgba(36, 123, 255, 0.15);
+      border: 1px solid var(--accent);
+      color: #38bdf8;
+    }
+    .btn {
+      background: var(--accent);
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 13px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+    .controls-panel {
+      max-width: 960px;
+      width: 100%;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 32px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .btn-pill {
+      background: #111b33;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .btn-pill.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+    .gallery {
+      max-width: 960px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 36px;
+    }
+    .svg-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .card-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .card-title {
+      font-weight: 700;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .viewport-box {
+      width: 100%;
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      margin: 0 auto;
+    }
+    .viewport-box.dark { background: #070b16; }
+    .viewport-box.checker {
+      background-image: linear-gradient(45deg, #1e293b 25%, transparent 25%),
+        linear-gradient(-45deg, #1e293b 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #1e293b 75%),
+        linear-gradient(-45deg, transparent 75%, #1e293b 75%);
+      background-size: 16px 16px;
+      background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+      background-color: #0f172a;
+    }
+    .viewport-box.light { background: #e2e8f0; }
+    .viewport-box img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header-bar">
+    <div>
+      <div class="badge">THE PROFILE PLAYBOOK // ROOT PREVIEW</div>
+      <h1 style="font-size: 26px; margin-top: 8px;">Sukant Codes (@sukantcodes)</h1>
+      <p style="color: var(--text-muted); font-size: 14px; margin-top: 4px;">
+        Self-contained animated vector suite verifying: Hero, About, Stack, ID Dashboard, and Connect.
+      </p>
+    </div>
+    <div style="display: flex; gap: 10px;">
+      <a href="./profile-assets.zip" download class="btn">
+        📦 Download Upload-Ready ZIP
+      </a>
+      <a href="./README.md" download class="btn btn-outline">
+        📄 View README.md
+      </a>
+    </div>
+  </div>
+
+  <div class="controls-panel">
+    <div class="control-group">
+      <span>Viewport Width:</span>
+      <button class="btn-pill active" onclick="setViewport('100%')">Responsive (920px)</button>
+      <button class="btn-pill" onclick="setViewport('768px')">Tablet (768px)</button>
+      <button class="btn-pill" onclick="setViewport('375px')">Mobile (375px)</button>
+    </div>
+
+    <div class="control-group">
+      <span>Background Test:</span>
+      <button class="btn-pill active" onclick="setBg('dark')">Navy Dark</button>
+      <button class="btn-pill" onclick="setBg('checker')">Checkerboard Alpha</button>
+      <button class="btn-pill" onclick="setBg('light')">Light GitHub</button>
+    </div>
+
+    <div class="control-group">
+      <span>Timeline Scrub:</span>
+      <button class="btn-pill" onclick="restartAnimations()">⟳ Replay 0s</button>
+    </div>
+  </div>
+
+  <div class="gallery">
+    <!-- 01 HERO -->
+    <div class="svg-card">
+      <div class="card-meta">
+        <div class="card-title"><span style="color: #247bff">01</span> assets/hero.svg?v=1</div>
+        <a href="./assets/hero.svg" download class="btn btn-outline" style="padding: 4px 10px; font-size: 11px;">Download SVG</a>
+      </div>
+      <div class="viewport-box dark">
+        <img src="./assets/hero.svg?v=1" alt="Hero SVG" id="img-hero" />
+      </div>
+    </div>
+
+    <!-- 02 ABOUT -->
+    <div class="svg-card">
+      <div class="card-meta">
+        <div class="card-title"><span style="color: #247bff">02</span> assets/about-life.svg?v=1</div>
+        <a href="./assets/about-life.svg" download class="btn btn-outline" style="padding: 4px 10px; font-size: 11px;">Download SVG</a>
+      </div>
+      <div class="viewport-box dark">
+        <img src="./assets/about-life.svg?v=1" alt="About SVG" id="img-about" />
+      </div>
+    </div>
+
+    <!-- 03 STACK -->
+    <div class="svg-card">
+      <div class="card-meta">
+        <div class="card-title"><span style="color: #247bff">03</span> assets/stack.svg?v=1</div>
+        <a href="./assets/stack.svg" download class="btn btn-outline" style="padding: 4px 10px; font-size: 11px;">Download SVG</a>
+      </div>
+      <div class="viewport-box dark">
+        <img src="./assets/stack.svg?v=1" alt="Stack SVG" id="img-stack" />
+      </div>
+    </div>
+
+    <!-- 04 ID DASHBOARD -->
+    <div class="svg-card">
+      <div class="card-meta">
+        <div class="card-title"><span style="color: #247bff">04</span> assets/id-dashboard.svg?v=1</div>
+        <a href="./assets/id-dashboard.svg" download class="btn btn-outline" style="padding: 4px 10px; font-size: 11px;">Download SVG</a>
+      </div>
+      <div class="viewport-box dark">
+        <img src="./assets/id-dashboard.svg?v=1" alt="ID Dashboard SVG" id="img-id" />
+      </div>
+    </div>
+
+    <!-- 05 CONNECT -->
+    <div class="svg-card">
+      <div class="card-meta">
+        <div class="card-title"><span style="color: #247bff">05</span> assets/connect.svg?v=1</div>
+        <a href="./assets/connect.svg" download class="btn btn-outline" style="padding: 4px 10px; font-size: 11px;">Download SVG</a>
+      </div>
+      <div class="viewport-box dark">
+        <img src="./assets/connect.svg?v=1" alt="Connect SVG" id="img-connect" />
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function setViewport(width) {
+      document.querySelectorAll('.viewport-box').forEach(box => {
+        box.style.maxWidth = width;
+      });
+      event.target.parentNode.querySelectorAll('.btn-pill').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+    }
+
+    function setBg(type) {
+      document.querySelectorAll('.viewport-box').forEach(box => {
+        box.className = 'viewport-box ' + type;
+      });
+      event.target.parentNode.querySelectorAll('.btn-pill').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+    }
+
+    function restartAnimations() {
+      const now = Date.now();
+      ['hero', 'about', 'stack', 'id', 'connect'].forEach(name => {
+        const el = document.getElementById('img-' + name);
+        if (el) el.src = './assets/' + (name === 'about' ? 'about-life.svg' : name === 'id' ? 'id-dashboard.svg' : name + '.svg') + '?t=' + now;
+      });
+    }
+  </script>
+</body>
+</html>
