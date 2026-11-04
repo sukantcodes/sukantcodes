@@ -56,10 +56,10 @@ export default function App() {
 
 <div align="center">
 
-[![GitHub](https://img.shields.io/badge/GitHub-sukantcodes-247bff?style=for-the-badge&logo=github&logoColor=white)](https://github.com/sukantcodes)
+[![GitHub](https://img.shields.io/badge/GitHub-sukantcodes-00f5ff?style=for-the-badge&logo=github&logoColor=black)](https://github.com/sukantcodes)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Sukant%20Bhattacharya-0a66c2?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/sukantcodes)
-[![Email](https://img.shields.io/badge/Email-sukantxplodeprime%40gmail.com-ff354f?style=for-the-badge&logo=gmail&logoColor=white)](mailto:sukantxplodeprime@gmail.com)
-[![Status](https://img.shields.io/badge/System-ONLINE%20%26%20BUILDING-10b981?style=for-the-badge&logo=android&logoColor=white)](https://github.com/sukantcodes)
+[![Email](https://img.shields.io/badge/Email-sukantxplodeprime%40gmail.com-ff0055?style=for-the-badge&logo=gmail&logoColor=white)](mailto:sukantxplodeprime@gmail.com)
+[![Status](https://img.shields.io/badge/System-3D%20ACTIVE%20%26%20ONLINE-00ff9d?style=for-the-badge&logo=android&logoColor=black)](https://github.com/sukantcodes)
 
 </div>
 
@@ -77,7 +77,7 @@ export default function App() {
 
 <div align="center">
 
-*Crafted with precision for **@sukantcodes** — The Profile Playbook Edition.*  
+*Crafted with high-voltage 3D vectors for **@sukantcodes** — The Profile Playbook 3D Edition.*  
 *Self-contained CSS + SMIL vector suite • Zero network requests • Mobile optimized.*
 
 </div>`;
