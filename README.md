@@ -1,43 +1,47 @@
 <div align="center">
 
-<img src="./assets/hero-daydream.svg?v=6" alt="Sukant Bhattacharya — Android Developer, AI Engineer" width="100%"/>
+<img src="./assets/hero-daydream.svg?v=7" alt="Sukant Bhattacharya — Android Developer, AI Engineer" width="100%"/>
 
-<img src="./assets/tags.svg?v=6" alt="Developer · Android · Kotlin · AI · Open Source" width="100%"/>
+<img src="./assets/tags.svg?v=7" alt="Developer · Android · Kotlin · AI · Open Source" width="100%"/>
 
 <img src="https://komarev.com/ghpvc/?username=sukantcodes&label=PROFILE%20VIEWS&color=f5d28a&labelColor=110a24&style=for-the-badge" alt="views"/>
 <a href="https://github.com/sukantcodes?tab=followers"><img src="https://img.shields.io/github/followers/sukantcodes?style=for-the-badge&logo=github&color=f2b5a0&labelColor=110a24" alt="followers"/></a>
 <img src="https://img.shields.io/badge/Kotlin-Android-c7b8ff?style=for-the-badge&logo=kotlin&logoColor=white&labelColor=110a24" alt="kotlin"/>
 <img src="https://img.shields.io/badge/AI-Gemini%20%7C%20PyTorch-8fd3ff?style=for-the-badge&logo=googlegemini&logoColor=white&labelColor=110a24" alt="ai"/>
 
-<img src="./assets/divider.svg?v=6" width="100%" alt=""/>
+<img src="./assets/divider.svg?v=7" width="100%" alt=""/>
 
-<img src="./assets/about-daydream.svg?v=6" alt="About Sukant" width="100%"/>
+<img src="./assets/about-daydream.svg?v=7" alt="About Sukant" width="100%"/>
 
-<img src="./assets/divider.svg?v=6" width="100%" alt=""/>
+<img src="./assets/divider.svg?v=7" width="100%" alt=""/>
 
-<img src="./assets/services-daydream.svg?v=6" alt="What I build" width="100%"/>
+<img src="./assets/services-daydream.svg?v=7" alt="What I build" width="100%"/>
 
-<img src="./assets/divider.svg?v=6" width="100%" alt=""/>
+<img src="./assets/divider.svg?v=7" width="100%" alt=""/>
 
-<img src="./assets/showreel-daydream.svg?v=6" alt="The many sides" width="100%"/>
+<img src="./assets/showreel-daydream.svg?v=7" alt="The many sides" width="100%"/>
 
-<img src="./assets/divider.svg?v=6" width="100%" alt=""/>
+<img src="./assets/divider.svg?v=7" width="100%" alt=""/>
 
-<img src="./assets/lookbook-daydream.svg?v=6" alt="Lookbook" width="100%"/>
+<img src="./assets/lookbook-daydream.svg?v=7" alt="Lookbook" width="100%"/>
 
-<img src="./assets/divider.svg?v=6" width="100%" alt=""/>
+<img src="./assets/divider.svg?v=7" width="100%" alt=""/>
 
-<img src="./assets/skills-daydream.svg?v=6" alt="Tech universe" width="100%"/>
+<img src="./assets/skills-daydream.svg?v=7" alt="Tech universe" width="100%"/>
 
-<img src="./assets/divider.svg?v=6" width="100%" alt=""/>
+<img src="./assets/divider.svg?v=7" width="100%" alt=""/>
 
-<img src="./assets/jarvis-daydream.svg?v=6" alt="JARVIS voice assistant demo" width="100%"/>
+<img src="./assets/aurora-daydream.svg?v=1" alt="Flow state" width="100%"/>
 
-<img src="./assets/divider.svg?v=6" width="100%" alt=""/>
+<img src="./assets/divider.svg?v=7" width="100%" alt=""/>
 
-<img src="./assets/moments-daydream.svg?v=6" alt="Moments" width="100%"/>
+<img src="./assets/jarvis-daydream.svg?v=7" alt="JARVIS voice assistant demo" width="100%"/>
 
-<img src="./assets/divider.svg?v=6" width="100%" alt=""/>
+<img src="./assets/divider.svg?v=7" width="100%" alt=""/>
+
+<img src="./assets/moments-daydream.svg?v=7" alt="Moments" width="100%"/>
+
+<img src="./assets/divider.svg?v=7" width="100%" alt=""/>
 
 <img src="./assets/cardshead-daydream.svg?v=1" alt="Frame cards" width="100%"/>
 
@@ -84,20 +88,28 @@
 </tr>
 </table>
 
+<img src="./assets/divider.svg?v=7" width="100%" alt=""/>
 
-<img src="./assets/divider.svg?v=6" width="100%" alt=""/>
+<img src="./assets/ticker-daydream.svg?v=1" alt="Keep flowing" width="100%"/>
 
-<img src="./assets/coderain-daydream.svg?v=6" alt="Code. Create. Repeat." width="100%"/>
 
-<img src="./assets/divider.svg?v=6" width="100%" alt=""/>
+<img src="./assets/divider.svg?v=7" width="100%" alt=""/>
 
-<img src="./assets/principles-daydream.svg?v=6" alt="How I work" width="100%"/>
+<img src="./assets/coderain-daydream.svg?v=7" alt="Code. Create. Repeat." width="100%"/>
 
-<img src="./assets/divider.svg?v=6" width="100%" alt=""/>
+<img src="./assets/divider.svg?v=7" width="100%" alt=""/>
+
+<img src="./assets/orbs-daydream.svg?v=1" alt="Focus areas" width="100%"/>
+
+<img src="./assets/divider.svg?v=7" width="100%" alt=""/>
+
+<img src="./assets/principles-daydream.svg?v=7" alt="How I work" width="100%"/>
+
+<img src="./assets/divider.svg?v=7" width="100%" alt=""/>
 
 ### 🚀 Production Projects
 
-<img src="./assets/projects.svg?v=6" alt="Projects" width="100%"/>
+<img src="./assets/projects.svg?v=7" alt="Projects" width="100%"/>
 
 | Project | Stack | Link |
 | :--- | :--- | :--- |
@@ -106,13 +118,53 @@
 | **My Voice Assistant** | Kotlin • Android | [View repo →](https://github.com/sukantcodes/My-voice-assistant.Apk) |
 | **Clozed Code** | Kotlin | [View repo →](https://github.com/sukantcodes/Clozed-code-) |
 
-<img src="./assets/divider.svg?v=6" width="100%" alt=""/>
+<img src="./assets/divider.svg?v=7" width="100%" alt=""/>
 
-<img src="./assets/sunset-daydream.svg?v=6" alt="Stay grounded. Build big." width="100%"/>
+<img src="./assets/citydrift-daydream.svg?v=1" alt="City drift" width="100%"/>
 
-<img src="./assets/divider.svg?v=6" width="100%" alt=""/>
+<img src="./assets/divider.svg?v=7" width="100%" alt=""/>
+
+<img src="./assets/sunset-daydream.svg?v=7" alt="Stay grounded. Build big." width="100%"/>
+
+<img src="./assets/divider.svg?v=7" width="100%" alt=""/>
 
 ![ID](./assets/id-dashboard.svg?v=1)
+
+<img src="./assets/livehead-daydream.svg?v=1" alt="Live widgets" width="100%"/>
+
+<img src="https://raw.githubusercontent.com/sukantcodes/sukantcodes/output/live-stats.svg" alt="Live GitHub stats" width="100%"/>
+
+### 🧊 3D Contribution Skyline
+
+<img src="./profile-3d-contrib/profile-night-rainbow.svg" alt="3D contribution profile" width="100%"/>
+
+<img src="./profile-3d-contrib/profile-season-animate.svg" alt="3D contribution profile, animated seasons" width="100%"/>
+
+### 🕹️ Arcade Mode
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/sukantcodes/sukantcodes/output/pacman-contribution-graph-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/sukantcodes/sukantcodes/output/pacman-contribution-graph.svg">
+  <img alt="Pac-Man" src="https://raw.githubusercontent.com/sukantcodes/sukantcodes/output/pacman-contribution-graph-dark.svg" width="100%">
+</picture>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/sukantcodes/sukantcodes/output/breakout-contribution-graph-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/sukantcodes/sukantcodes/output/breakout-contribution-graph.svg">
+  <img alt="Breakout" src="https://raw.githubusercontent.com/sukantcodes/sukantcodes/output/breakout-contribution-graph-dark.svg" width="100%">
+</picture>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/sukantcodes/sukantcodes/output/galaga-contribution-graph-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/sukantcodes/sukantcodes/output/galaga-contribution-graph.svg">
+  <img alt="Galaga" src="https://raw.githubusercontent.com/sukantcodes/sukantcodes/output/galaga-contribution-graph-dark.svg" width="100%">
+</picture>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/sukantcodes/sukantcodes/output/tetris-contribution-graph-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/sukantcodes/sukantcodes/output/tetris-contribution-graph.svg">
+  <img alt="Tetris" src="https://raw.githubusercontent.com/sukantcodes/sukantcodes/output/tetris-contribution-graph-dark.svg" width="100%">
+</picture>
 
 ### 🐍 Contribution Snake
 
@@ -121,9 +173,9 @@
   <img alt="contribution snake" src="https://raw.githubusercontent.com/sukantcodes/sukantcodes/output/github-snake.svg" width="100%">
 </picture>
 
-<img src="./assets/divider.svg?v=6" width="100%" alt=""/>
+<img src="./assets/divider.svg?v=7" width="100%" alt=""/>
 
-<img src="./assets/footer-daydream.svg?v=6" alt="Let's build something unforgettable together" width="100%"/>
+<img src="./assets/footer-daydream.svg?v=7" alt="Let's build something unforgettable together" width="100%"/>
 
 [![GitHub](https://img.shields.io/badge/GitHub-sukantcodes-f5d28a?style=for-the-badge&logo=github&logoColor=black)](https://github.com/sukantcodes)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Sukant%20Bhattacharya-0a66c2?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/sukantcodes)
