@@ -11,23 +11,23 @@
 
 <img src="./assets/divider.svg?v=7" width="100%" alt=""/>
 
-<img src="./assets/about-daydream.svg?v=7" alt="About Sukant" width="100%"/>
+<img src="./assets/about-daydream.svg?v=8" alt="About Sukant" width="100%"/>
 
 <img src="./assets/divider.svg?v=7" width="100%" alt=""/>
 
-<img src="./assets/services-daydream.svg?v=7" alt="What I build" width="100%"/>
+<img src="./assets/services-daydream.svg?v=8" alt="What I build" width="100%"/>
 
 <img src="./assets/divider.svg?v=7" width="100%" alt=""/>
 
-<img src="./assets/showreel-daydream.svg?v=7" alt="The many sides" width="100%"/>
+<img src="./assets/showreel-daydream.svg?v=8" alt="The many sides" width="100%"/>
 
 <img src="./assets/divider.svg?v=7" width="100%" alt=""/>
 
-<img src="./assets/lookbook-daydream.svg?v=7" alt="Lookbook" width="100%"/>
+<img src="./assets/lookbook-daydream.svg?v=8" alt="Lookbook" width="100%"/>
 
 <img src="./assets/divider.svg?v=7" width="100%" alt=""/>
 
-<img src="./assets/skills-daydream.svg?v=7" alt="Tech universe" width="100%"/>
+<img src="./assets/skills-daydream.svg?v=8" alt="Tech universe" width="100%"/>
 
 <img src="./assets/divider.svg?v=7" width="100%" alt=""/>
 
@@ -39,7 +39,7 @@
 
 <img src="./assets/divider.svg?v=7" width="100%" alt=""/>
 
-<img src="./assets/moments-daydream.svg?v=7" alt="Moments" width="100%"/>
+<img src="./assets/moments-daydream.svg?v=8" alt="Moments" width="100%"/>
 
 <img src="./assets/divider.svg?v=7" width="100%" alt=""/>
 
@@ -51,7 +51,7 @@
 <td width="50%" align="center"><img src="./assets/cards/card-02.svg?v=1" width="100%" alt="Frame 2"/></td>
 </tr>
 <tr>
-<td width="50%" align="center"><img src="./assets/cards/card-03.svg?v=1" width="100%" alt="Frame 3"/></td>
+<td width="50%" align="center"><img src="./assets/cards/card-03.svg?v=2" width="100%" alt="Frame 3"/></td>
 <td width="50%" align="center"><img src="./assets/cards/card-04.svg?v=1" width="100%" alt="Frame 4"/></td>
 </tr>
 <tr>
