@@ -43,11 +43,10 @@ a('''<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" 
 <linearGradient id="tg" gradientUnits="userSpaceOnUse" x1="0" x2="520" spreadMethod="repeat"><stop offset="0" stop-color="#22d3ee"/><stop offset=".33" stop-color="#a78bfa"/><stop offset=".66" stop-color="#f472b6"/><stop offset="1" stop-color="#22d3ee"/><animateTransform attributeName="gradientTransform" type="translate" values="0 0;520 0" dur="10s" repeatCount="indefinite"/></linearGradient>
 <linearGradient id="bd" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22d3ee"/><stop offset=".5" stop-color="#a78bfa"/><stop offset="1" stop-color="#f472b6"/></linearGradient>
 <linearGradient id="sh" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".45"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
-<filter id="bl" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="55"/></filter>
-<filter id="g" x="-20%" y="-30%" width="140%" height="160%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+<radialGradient id="r1"><stop offset="0" stop-color="#22d3ee" stop-opacity=".4"/><stop offset="1" stop-color="#22d3ee" stop-opacity="0"/></radialGradient><radialGradient id="r2"><stop offset="0" stop-color="#a78bfa" stop-opacity=".4"/><stop offset="1" stop-color="#a78bfa" stop-opacity="0"/></radialGradient><radialGradient id="r3"><stop offset="0" stop-color="#f472b6" stop-opacity=".34"/><stop offset="1" stop-color="#f472b6" stop-opacity="0"/></radialGradient>
 <clipPath id="card"><rect width="920" height="520" rx="30"/></clipPath></defs>''')
 a('<g clip-path="url(#card)"><rect width="920" height="520" fill="url(#bg)"/>')
-a('<g filter="url(#bl)"><circle cx="110" cy="90" r="150" fill="#22d3ee" opacity=".28"><animate attributeName="cx" values="110;260;110" dur="26s" calcMode="spline" keyTimes="0;.5;1" keySplines=".45 0 .55 1;.45 0 .55 1" repeatCount="indefinite"/></circle><circle cx="820" cy="430" r="170" fill="#a78bfa" opacity=".28"/><circle cx="470" cy="500" r="130" fill="#f472b6" opacity=".24"/></g>')
+a('<circle cx="110" cy="90" r="230" fill="url(#r1)"><animate attributeName="cx" values="110;260;110" dur="26s" calcMode="spline" keyTimes="0;.5;1" keySplines=".45 0 .55 1;.45 0 .55 1" repeatCount="indefinite"/></circle><circle cx="820" cy="430" r="250" fill="url(#r2)"/><circle cx="470" cy="500" r="200" fill="url(#r3)"/>')
 # title (layered 3D)
 for i in range(10, 0, -1):
     a(f'<text x="{36+i*.5:.1f}" y="{84+i*.6:.1f}" class="h3" style="font-size:58px" fill="#1b2a6b" textLength="360" lengthAdjust="spacingAndGlyphs">LIVE STATS</text>')
@@ -61,9 +60,9 @@ g = [('REPOS', str(len(repos)), len(repos) / 20, '#22d3ee'), ('LANGUAGES', str(l
 for i, (lab, n, frac0, c) in enumerate(g):
     x = 30 + i * 218; y = 140; cx, cy, r = x + 56, y + 62, 38
     circ = 2 * 3.14159 * r; frac = max(.08, min(1, frac0)); off = circ * (1 - frac)
-    a(f'<g class="d{i+1}"><g filter="url(#g)"><rect x="{x}" y="{y}" width="200" height="124" rx="22" fill="#0a0f2a" stroke="{c}" stroke-width="2"/></g><rect x="{x+3}" y="{y+3}" width="194" height="40" rx="19" fill="#fff" opacity=".04"/>')
+    a(f'<g class="d{i+1}"><rect x="{x}" y="{y}" width="200" height="124" rx="22" fill="none" stroke="{c}" stroke-width="12" stroke-opacity=".1"/><rect x="{x}" y="{y}" width="200" height="124" rx="22" fill="#0a0f2a" stroke="{c}" stroke-width="2"/><rect x="{x+3}" y="{y+3}" width="194" height="40" rx="19" fill="#fff" opacity=".04"/>')
     a(f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="none" stroke="#fff" stroke-opacity=".08" stroke-width="8"/>')
-    a(f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="none" stroke="{c}" stroke-width="8" stroke-linecap="round" stroke-dasharray="{circ:.1f}" stroke-dashoffset="{circ:.1f}" transform="rotate(-90 {cx} {cy})" filter="url(#g)"><animate attributeName="stroke-dashoffset" values="{circ:.1f};{off:.1f};{off:.1f};{circ:.1f}" keyTimes="0;.3;.85;1" calcMode="spline" keySplines=".45 0 .55 1;0 0 1 1;.45 0 .55 1" dur="10s" begin="{i*.5}s" repeatCount="indefinite"/></circle>')
+    a(f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="none" stroke="{c}" stroke-width="8" stroke-linecap="round" stroke-dasharray="{circ:.1f}" stroke-dashoffset="{circ:.1f}" transform="rotate(-90 {cx} {cy})"><animate attributeName="stroke-dashoffset" values="{circ:.1f};{off:.1f};{off:.1f};{circ:.1f}" keyTimes="0;.3;.85;1" calcMode="spline" keySplines=".45 0 .55 1;0 0 1 1;.45 0 .55 1" dur="10s" begin="{i*.5}s" repeatCount="indefinite"/></circle>')
     a(f'<text x="{cx}" y="{cy+9}" text-anchor="middle" class="hd" style="font-size:26px" fill="#fff">{n}</text>')
     a(f'<text x="{x+108}" y="{y+56}" class="mono" style="font-size:11px;letter-spacing:1.5px" fill="{c}">{lab}</text><text x="{x+108}" y="{y+78}" class="mono" style="font-size:10.5px" fill="#7d8fe0">live from GitHub</text></g>')
 # language flow bar
