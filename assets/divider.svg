@@ -1,6 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 40" width="100%"><defs>
-<linearGradient id="l" x1="0" x2="1"><stop offset="0" stop-color="#ff9ff3" stop-opacity="0"/><stop offset=".25" stop-color="#ff9ff3"/><stop offset=".5" stop-color="#7dd3fc"/><stop offset=".75" stop-color="#5eead4"/><stop offset="1" stop-color="#5eead4" stop-opacity="0"/></linearGradient>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 44" width="100%"><defs>
+<linearGradient id="l" x1="0" x2="1"><stop offset="0" stop-color="#f5d28a" stop-opacity="0"/><stop offset=".3" stop-color="#f5d28a"/><stop offset=".5" stop-color="#fff1d6"/><stop offset=".7" stop-color="#f2b5a0"/><stop offset="1" stop-color="#f2b5a0" stop-opacity="0"/></linearGradient>
 <filter id="g" x="-20%" y="-300%" width="140%" height="700%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-<g filter="url(#g)"><rect x="40" y="19" width="840" height="3" rx="1.5" fill="url(#l)"/>
-<circle r="5" cy="20.5" fill="#fff"><animate attributeName="cx" values="40;880;40" dur="6s" repeatCount="indefinite"/></circle>
-<g transform="translate(460,20.5) rotate(45)"><rect x="-8" y="-8" width="16" height="16" fill="#0b0220" stroke="#ff9ff3" stroke-width="2.5"><animate attributeName="stroke" values="#ff9ff3;#7dd3fc;#5eead4;#ff9ff3" dur="5s" repeatCount="indefinite"/></rect></g></g></svg>
+<g filter="url(#g)"><rect x="40" y="21" width="840" height="2" rx="1" fill="url(#l)"/>
+<circle r="4" cy="22" fill="#fff"><animate attributeName="cx" values="40;880;40" dur="12s" calcMode="spline" keyTimes="0;.5;1" keySplines=".45 0 .55 1;.45 0 .55 1" repeatCount="indefinite"/></circle>
+<g transform="translate(460,22) rotate(45)"><rect x="-8" y="-8" width="16" height="16" fill="#06050e" stroke="#f5d28a" stroke-width="2.5"><animate attributeName="stroke" values="#f5d28a;#f2b5a0;#fff1d6;#f5d28a" dur="9s" repeatCount="indefinite"/></rect></g>
+<g transform="translate(420,22) rotate(45)"><rect x="-4" y="-4" width="8" height="8" fill="#f5d28a" opacity=".8"/></g><g transform="translate(500,22) rotate(45)"><rect x="-4" y="-4" width="8" height="8" fill="#f2b5a0" opacity=".8"/></g></g></svg>
