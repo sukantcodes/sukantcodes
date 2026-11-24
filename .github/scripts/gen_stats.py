@@ -28,6 +28,7 @@ W, H = 920, 520
 o = []
 a = o.append
 a(f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="100%">')
+a(f'<rect width="{W}" height="{H}" fill="#050816"/>')
 a('''<style>
 .hd{font-family:"Segoe UI",Inter,system-ui,sans-serif;font-weight:800}.mono{font-family:ui-monospace,Menlo,Consolas,monospace}
 .h3{font-family:"Arial Black","Segoe UI",sans-serif;font-weight:900}

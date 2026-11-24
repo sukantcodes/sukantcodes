@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 118" width="100%"><style>.t{font:800 15px "Segoe UI",system-ui,sans-serif;fill:#fff4e6}
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 118" width="100%"><rect width="920" height="118" fill="#06050e"/><style>.t{font:800 15px "Segoe UI",system-ui,sans-serif;fill:#fff4e6}
 @keyframes m1{to{transform:translateX(-2000px)}}@keyframes m2{from{transform:translateX(-1875px)}to{transform:translateX(0)}}
 .a1{animation:m1 70s linear infinite}.a2{animation:m2 78s linear infinite}@media (prefers-reduced-motion:reduce){*{animation:none!important}}</style>
 <defs><linearGradient id="e"><stop offset="0" stop-color="#000"/><stop offset=".08" stop-color="#fff"/><stop offset=".92" stop-color="#fff"/><stop offset="1" stop-color="#000"/></linearGradient><mask id="mk"><rect width="920" height="118" fill="url(#e)"/></mask>

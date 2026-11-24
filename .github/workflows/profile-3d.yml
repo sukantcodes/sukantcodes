@@ -15,6 +15,16 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           USERNAME: ${{ github.repository_owner }}
+      - name: Dark backing
+        run: |
+          python3 - <<'PY'
+          import glob, re
+          for f in glob.glob('profile-3d-contrib/*.svg'):
+              s = open(f, encoding='utf8').read()
+              if 'fill="#06050e"' in s[:2000]: continue
+              s = re.sub(r'(<svg[^>]*>)', r'\1<rect x="-9999" y="-9999" width="29999" height="29999" fill="#06050e"/>', s, count=1)
+              open(f, 'w', encoding='utf8').write(s)
+          PY
       - name: Commit & Push
         run: |
           git config user.name github-actions

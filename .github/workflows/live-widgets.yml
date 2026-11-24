@@ -37,6 +37,17 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_USER: ${{ github.repository_owner }}
 
+      - name: Dark backing for transparent widgets
+        run: |
+          python3 - <<'PY'
+          import glob, re
+          for f in glob.glob('dist/*.svg'):
+              if f.endswith('live-stats.svg'): continue
+              s = open(f, encoding='utf8').read()
+              s = re.sub(r'(<svg[^>]*>)', r'\1<rect x="-9999" y="-9999" width="29999" height="29999" fill="#06050e"/>', s, count=1)
+              open(f, 'w', encoding='utf8').write(s)
+          PY
+
       - name: Publish to output branch
         uses: crazy-max/ghaction-github-pages@v4
         with:
